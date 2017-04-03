@@ -28,7 +28,7 @@ Since our application will be interactive, the demonstration will be a visual to
 Whether we successfully implement the features we propose will mainly be a qualitative evaluation of the sound and visual quality. Additionally, we will write unit tests for the "state modifying functions" which create new lists based on the change the user requested.  For instance, transposition can be tested numerically without a GUI.
 
 ## Architecture Diagram
-![architecture](architecture@2x.png)
+![architecture](architecture_with_names@2x.png)
 
 The core of the project will be a code-based representation of sheet music. It is indicated in blue above. All the musical "primitives" that we will be implementing in our application will need to be represented by code. This will entail objects like a "note" which may have a pitch and a duration. Then these notes will have to be collected. In essence we'll need a way to represent music as objects that we create. That is the goal of the "core".
 
