@@ -1,16 +1,16 @@
 # Sheet Music Editor
 
 ### Statement
-We'll be creating an application for writing, editing, exporting, and playing sheet music. We plan on beginning with basic functionality, and as we proceed, intend to add features of increasing musical complexity.
+We'll be creating an application for writing, editing, exporting, and playing sheet music. We plan on beginning with basic functionality, and as we proceed, intend to add features of increasing complexity.
 
-Both of us like music, so it made sense to chose a project idea based on interests outside of computer science. For both of us, this is our first big project that'll we'll need to complete from start to finish (planning stages to full user interface). Additionally, this project will require us to use a wide range of concepts that we've learned so far.  Our goal is to successfully complete the experience so that we can apply these skills to future endeavors (i.e. honors project).
+Both of us like music, so it made sense to chose a project idea based on interests outside of computer science. For both of us, this is our first big project that'll we'll need to complete from start to finish (planning stages to full user interface). Additionally, this project will require us to use a wide range of concepts that we've learned so far.  Our goal is to successfully complete the experience so that we can apply these skills to future endeavors (e.g. honors project).
 
 ### Analysis
 OPL concepts we plan to use:
 - Abstraction/Object Orientation. We'll be representing different music primitives as objects (ie. note, scale). We'll need to write functions to create and interact with these primitives.
 - Recursion. We'll have lists of music primitives that we'll need to operate on (playing lists of notes, transposing, exporting, etc).
 - Map/Filter/Reduce. Because we'll be storing music primitives in lists, map/filter/reduce will be very important for operating on these lists. For example, Map will be useful for writing transposition functions.
-- Functional Approaches. We'll be using lots of recursion, and through the use of recursion, will be able to create this application without modifying state.  When lists are "modified", we will have them mapped reconstructed using functions.  For instance, as a simple example, creating a note will take the current list of notes and return one which is a copy of the original with the new note appended.
+- Functional Approaches. We'll be using lots of recursion, and through the use of recursion, will be able to create this application without modifying state.  When lists are "modified", we will have them reconstructed using functions.  For instance, as a simple example, creating a note will take the current list of notes and return one which is a copy of the original with the new note appended.
 
 ### External Technologies
 We plan on using rsound to generate music from the sheet music. We'd also like to be able to export the sheet music as a PDF and the audio as a sound file.
@@ -20,9 +20,9 @@ We plan to import a set of high-quality images to render the musical notation.
 In terms of data/source materials, we'll need to keep a list of the notes names. Nothing other than that.
 
 ### Deliverables and Demonstration
-The final product will have a GUI that the user will interact with. The user will be able to input information via the keyboard and buttons in the application. The user should be able to create, edit, save, and export sheet music. In the application, the user should also be able to play the audio associated with the sheet music.
+The final product will have a GUI with which the user will interact. The user will be able to input information via the keyboard and buttons in the application. The user should be able to create, edit, save, and export sheet music. In the application, the user should also be able to play the audio associated with the sheet music.
 
-Since our application will be interactive, the demonstration will be a visual tour of the features.  We will have sample songs pre-loaded which the users can edit and play to see what their edits do to the music.
+Since our application will be interactive, the demonstration will be a visual tour of the features. We will have sample songs pre-loaded which the users can edit and play to see what their edits do to the music.
 
 ### Evaluation of Results
 Whether we successfully implement the features we propose will mainly be a qualitative evaluation of the sound and visual quality. Additionally, we will write unit tests for the "state modifying functions" which create new lists based on the change the user requested.  For instance, transposition can be tested numerically without a GUI.
