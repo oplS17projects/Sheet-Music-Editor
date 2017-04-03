@@ -29,7 +29,17 @@ We will know if we are successful if we successfully implement the features we p
 ## Architecture Diagram
 Upload the architecture diagram you made for your slide presentation to your repository, and include it in-line here.
 
-Create several paragraphs of narrative to explain the pieces and how they interoperate.
+The core of the project will be a code-based representation of sheet music. All the musical "primitives" that we will be implementing in our application will need to be represented by code. This will entail objects like a "note" which may have a pitch and a duration. Then these notes will have to be collected. In essence we'll need a way to represent music as objects that we create. That is the goal of the "core".
+
+The next major chunk is Draw. This will handle taking the internal code-based representation of sheet music (aka the Core) and drawing it to the screen so the user can see it. Draw is the segment that takes data from the Core and translates it to the UI. Draw will use racket/draw.
+
+The modifying functions, (referred to here as Mutators) allows the user to modify the sheet music. Throw a series of buttons (racket/gui) and keyboard inputs, the user should be able to trigger Mutators that change the internal representation of the sheet music. The Event Listener will take any detected input from either the keyboard or buttons on the UI, and trigger the appropriate Mutator, which will change the code-based information stored in the core. Changes to the Core will then trigger the Draw function to update what's visible to the user.
+
+Another key component is Play. This is similar to Draw in that it receives data from Core and translates it to another representation. But instead of drawing it to the screen, Play generates audio that the user can listen to. Play will use rsound.
+
+The final major part is Export, which takes the data stored in Core and does yet another transformation. Export will translate the data into a filetype that can be opened by other applications. For example, Export might save the sheet music as a PDF, which can then be opened by another application.
+
+All of these modules work with the data stored in Core, and creates different representations so that the user can interact with the data. This modular system is beneficial, in that it allows for flexibility. Modularity in developping applications is important, as it allows the developpers to add or remove modules as necessary.
 
 ## Schedule and Group Responsibilities
 
