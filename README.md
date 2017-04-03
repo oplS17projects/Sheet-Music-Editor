@@ -39,7 +39,7 @@ Another key component is Play. This is similar to Draw in that it receives data 
 
 The final major part is Export, which takes the data stored in Core and does yet another transformation. Export will translate the data into a filetype that can be opened by other applications. For example, Export might save the sheet music as a PDF, which can then be opened by another application.
 
-All of these modules work with the data stored in Core, and creates different representations so that the user can interact with the data. This modular system is beneficial, in that it allows for flexibility. Modularity in developping applications is important, as it allows the developpers to add or remove modules as necessary.
+All of these modules work with the data stored in Core, and creates different representations so that the user can interact with the data. This modular system is beneficial, in that it allows for flexibility. Modularity in developing applications is important, as it allows the developers to add or remove modules as necessary.
 
 ## Schedule and Group Responsibilities
 
