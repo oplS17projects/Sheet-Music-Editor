@@ -16,7 +16,7 @@ OPL concepts we plan to use:
 We plan on using rsound to generate music from the sheet music. We'd also like to be able to export the sheet music as a PDF and the audio as a sound file.
 
 ### Data Sets or other Source Materials
-We plan to import a set of high-quality images to render the musical notation.
+We plan to import a set of high-quality [images](/img/large) to render the musical notation, sourced for free from [this site](http://midnightmusic.com.au/2013/06/the-big-free-music-notation-image-library/).
 In terms of data/source materials, we'll need to keep a list of the notes names. Nothing other than that.
 
 ### Deliverables and Demonstration
