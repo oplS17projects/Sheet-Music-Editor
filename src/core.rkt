@@ -73,7 +73,7 @@
 ; A score is list of staves
 ; Tempo is defined in beats per minute
 (define (make-score time-sig tempo . staves)
-  staves)
+  (list time-sig tempo staves))
 (define get-time-sig car)
 (define get-tempo cadr)
 (define get-staves caddr)
