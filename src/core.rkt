@@ -86,9 +86,13 @@
   (get-staff-helper (get-staves score) index))
 
 ; Stores info on current editing status
+; Index indicates which element of the list of notes is being edited
 (define (make-edit-info staff index)
   (cons staff index))
 (define get-current-staff car)
 (define get-current-index cdr)
+(define (inc-current-index obj) (make-edit-info (get-current-staff obj)
+                                                (+ (get-current-index obj) 1)))
 
+; Lets us unit test
 (provide (all-defined-out))
