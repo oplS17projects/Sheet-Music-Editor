@@ -84,6 +84,10 @@
         (get-staff-helper (cdr staves) (- index 1))
         (car staves)))
   (get-staff-helper (get-staves score) index))
+; Number of beats in the score
+; ***FOLD&MAP
+(define (count-beats score)
+  (foldl + 0 (map get-duration (get-notes (get-staff score 0)))))
 
 ; Stores info on current editing status
 ; Index indicates which element of the list of notes is being edited

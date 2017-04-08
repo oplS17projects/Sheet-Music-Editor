@@ -5,6 +5,18 @@
 
 "Running UNIT TESTS. Errors will be shown below (if any):"
 
+(define my-staff (make-staff 'treble (make-key-sig C)
+                             (make-note (make-pitch C 4) .5)
+                             (make-note (make-pitch C 4) .25)
+                             (make-note (make-pitch C 4) .25)
+                             (make-note (make-pitch C 4) 1)
+                             (make-note (make-pitch C 4) 2)
+                             (make-note (make-pitch C 4) 3)
+                             (make-note (make-pitch C 4) 4)
+                             (make-note (make-pitch C 4) .5)
+                             (make-note (make-pitch C 4) 1)
+                             (make-note (make-pitch C 4) .5)
+                             (make-note (make-pitch C 4) 1)))
 (define my-staff-treble (make-staff 'treble (make-key-sig C)
                                          (make-note (make-pitch C 4) 1)
                                          (make-note (make-pitch D 4) 1)))
@@ -53,6 +65,18 @@
                                                            (make-note (make-pitch C 4) 1)
                                                            (make-note (make-pitch D 4) 1)))
           (check-equal? (get-clef (get-staff my-score 1)) 'bass))))
+
+(test-case
+ "Count of beats in a score"
+ (let ([my-score (make-score (make-time-sig 2 4)
+                             60
+                             my-staff-treble
+                             my-staff-bass)]
+       [my-bigger-score (make-score (make-time-sig 2 4)
+                                    60
+                                    my-staff)])
+   (begin (check-equal? (count-beats my-score) 2)
+          (check-equal? (count-beats my-bigger-score) 14.0))))
 
 ; Edit info
 (test-case
