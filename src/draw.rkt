@@ -1,22 +1,27 @@
+;; SHEET MUSIC EDITOR - DRAW ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 #lang racket
 
 (require racket/draw)
 (require racket/gui)
 (require "core.rkt")
 
-;; Constants
-(define page-width-px 850)
-(define line-height-px 110)
+;; Constants ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Document size properties
+(define page-width-px 850)
 (define top-margin-px 100)
 (define stave-height-px 50)
 (define stave-gap-px 20)
 (define row-gap-px 50)
 (define bottom-margin-px 100)
-(define l-margin-px 10)
-(define r-margin-px 10)
+(define l-margin-px 20)
+(define r-margin-px 20)
 
+;; Essentially dictates how many measures we cram into a line
 (define beats-per-line 12)
+
+;; Utilities ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Decides the height of bitmap based on number of lines in the score
 (define (decide-height score)
@@ -32,9 +37,11 @@
 (define (draw-border w h dc)
   (send dc draw-rectangle 0 0 w h))
 
-;; Draw staves
+;; Drawing the staves ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Draw blank staves, including clef, time sig, key, and measures
 ;; ***RECURSION
-(define (draw-staves score dc)
+(define (draw-blank-staves score dc)
   ;; Internal proc to draw a set of 5 bars
   (define (draw-bars y)
     (define (draw-bars-helper cnt)
@@ -69,18 +76,22 @@
                                          (* (- rows 1) row-gap-px)))
                   (draw-all-staves n (- rows 1)))))
   
-  (draw-all-staves (length (get-staves score)) (ceiling (/ (count-beats score) beats-per-line))))
+  (draw-all-staves (length (get-staves score))
+                   (ceiling (/ (count-beats score) beats-per-line))))
     
+;; Drawing the notes ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Draw all notes
+(define (draw-notes score dc) 'foo)
+
+;; Render the final document ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Render the document
 (define (render target)
   (make-object image-snip% target))
 
-;; Draw a treble clef on dc at a certain scale s
-(define (draw-treble dc s)
-  (send dc draw-bitmap (make-object bitmap% "../img/small/treble.png" 'png/alpha #f #f s) 0 0))
+;; Main driver ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Main driver for draw
 (define (draw score)
   ;; Local definitions
   (define page-height-px (decide-height score))
@@ -91,17 +102,22 @@
     ;; Draw a border for the document
     (draw-border page-width-px page-height-px dc)
     ;; Draw all the empty staves
-    (draw-staves score dc)
+    (draw-blank-staves score dc)
+    ;; Draw notes onto the staves
+    ;; (draw-notes score dc)
     ;; Render the document
     (render drawing)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Experimental Code ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Draw a treble clef on dc at a certain scale s
+(define (draw-treble dc s)
+  (send dc draw-bitmap
+        (make-object bitmap% "../img/small/treble.png" 'png/alpha #f #f s) 0 0))
 
-
-
-;;;;;;;
-
+;; Create & draw an arbitrary score for verification
 (define my-staff-treble (make-staff 'treble (make-key-sig C)
                                          (make-note (make-pitch C 4) 2)
                                          (make-note (make-pitch D 4) 2)
@@ -132,5 +148,4 @@
                              60
                              my-staff-treble
                              my-staff-bass))
-
 (draw my-score)
