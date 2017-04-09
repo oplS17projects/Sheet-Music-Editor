@@ -11,15 +11,21 @@
 ;; Document size properties
 (define page-width-px 850)
 (define top-margin-px 100)
-(define stave-height-px 50)
-(define stave-gap-px 20)
+(define stave-height-px 40)
+(define stave-gap-px 30)
 (define row-gap-px 50)
 (define bottom-margin-px 100)
 (define l-margin-px 20)
 (define r-margin-px 20)
 
 ;; Essentially dictates how many measures we cram into a line
+;;   Using TWELVE to make the code simple for 1, 2, 3, or 4 beat measures
+;;   This will prevent awkward formatting
+;;   The code will not work for 5, etc, because it does not divide 12
 (define beats-per-line 12)
+
+;; How much space to leave for key signature
+(define key-sig-padding-px 50)
 
 ;; Utilities ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -50,9 +56,9 @@
           (begin (send dc
                        draw-line
                        l-margin-px
-                       (+ y (* (- cnt 1) (floor (/ stave-height-px 5))))
+                       (+ y (* (- cnt 1) (floor (/ stave-height-px 4))))
                        (- page-width-px r-margin-px)
-                       (+ y (* (- cnt 1) (floor (/ stave-height-px 5)))))
+                       (+ y (* (- cnt 1) (floor (/ stave-height-px 4)))))
                  (draw-bars-helper (- cnt 1)))))
     (draw-bars-helper 5))
 
@@ -62,22 +68,41 @@
         'done
         (begin (draw-bars (+ y (* (- n 1) (+ stave-height-px stave-gap-px))))
                (draw-set-of-staves (- n 1) y))))
+
+  ;; Internal proc to draw the measure bars
+  ;; n indicates how many staves
+  ;; m indicates how many measures
+  (define (draw-measure-bars y n m)
+    (define line-height (+ (* n stave-height-px) (* (- n 1) stave-gap-px)))
+    (define measure-width (/ (- page-width-px l-margin-px r-margin-px key-sig-padding-px) m))
+    (define (draw-measure-bars-helper x cnt)
+      (if (= cnt 0)
+          'done
+          (begin (send dc draw-line x y x (+ y line-height))
+                 (draw-measure-bars-helper (+ x measure-width) (- cnt 1)))))
+    (begin
+      ;; Draw first line
+      (send dc draw-line l-margin-px y l-margin-px (+ y line-height))
+      ;; Draw the rest of the lines recursively
+      (draw-measure-bars-helper (+ l-margin-px key-sig-padding-px measure-width) m)))
   
   ;; Internal proc to draw all staves recursively
   ;; It takes the number of staves
   ;;    and the number of rows of staves in the document
-  (define (draw-all-staves n rows)
+  (define (draw-all-staves n rows time)
     (if (= rows 0)
            'done
-           (begin (draw-set-of-staves n
-                                      (+ top-margin-px
-                                         (* (- rows 1) n stave-height-px)
-                                         (* (- rows 1) (- n 1) stave-gap-px)
-                                         (* (- rows 1) row-gap-px)))
-                  (draw-all-staves n (- rows 1)))))
+           (let ([y (+ top-margin-px
+                       (* (- rows 1) n stave-height-px)
+                       (* (- rows 1) (- n 1) stave-gap-px)
+                       (* (- rows 1) row-gap-px))])
+           (begin (draw-set-of-staves n y)
+                  (draw-measure-bars y n (/ beats-per-line (get-upper time)))
+                  (draw-all-staves n (- rows 1) time)))))
   
   (draw-all-staves (length (get-staves score))
-                   (ceiling (/ (count-beats score) beats-per-line))))
+                   (ceiling (/ (count-beats score) beats-per-line))
+                   (get-time-sig score)))
     
 ;; Drawing the notes ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -144,7 +169,7 @@
                                          (make-note (make-pitch D 4) 1)
                                          (make-note (make-pitch C 4) 1)
                                          (make-note (make-pitch D 4) 2)))
-(define my-score (make-score (make-time-sig 2 4)
+(define my-score (make-score (make-time-sig 4 4)
                              60
                              my-staff-treble
                              my-staff-bass))
