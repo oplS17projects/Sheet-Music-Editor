@@ -8,14 +8,14 @@
 (define my-staff (make-staff
                   'Treble
                   (make-key-sig C)
-                  (list (make-note (make-pitch C 4) 1)
-                        (make-note (make-pitch D 4) 1)
-                        (make-note (make-pitch E 4) 1)
-                        (make-note (make-pitch F 4) 1)
-                        (make-note (make-pitch G 4) 1)
-                        (make-note (make-pitch A 4) 1)
-                        (make-note (make-pitch B 4) 1)
-                        (make-note (make-pitch C 5) 1))))
+                  (make-note (make-pitch C 4) 1)
+                  (make-note (make-pitch D 4) 1)
+                  (make-note (make-pitch E 4) 1)
+                  (make-note (make-pitch F 4) 1)
+                  (make-note (make-pitch G 4) 1)
+                  (make-note (make-pitch A 4) 1)
+                  (make-note (make-pitch B 4) 1)
+                  (make-note (make-pitch C 5) 1)))
 
 ; Pitches
 (test-case
@@ -41,3 +41,15 @@
           (check-equal? (get-key-notes my-key-sig) '(F C G D A E))))) 
 
 ; Staves
+(test-case
+ "Creating a staff - a c major scale"
+ (begin (check-equal? (get-clef my-staff) 'Treble)
+        (check-equal? (get-key-sig my-staff) (make-key-sig C))
+        (check-equal? (get-notes my-staff) (list (make-note (make-pitch C 4) 1)
+                                                 (make-note (make-pitch D 4) 1)
+                                                 (make-note (make-pitch E 4) 1)
+                                                 (make-note (make-pitch F 4) 1)
+                                                 (make-note (make-pitch G 4) 1)
+                                                 (make-note (make-pitch A 4) 1)
+                                                 (make-note (make-pitch B 4) 1)
+                                                 (make-note (make-pitch C 5) 1)))))
