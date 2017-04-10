@@ -25,7 +25,15 @@
 (define beats-per-line 12)
 
 ;; How much space to leave for key signature
-(define key-sig-padding-px 50)
+(define clef-padding-px 5)
+(define key-sig-padding-px 45)
+(define clef-key-sig-padding-px (+ clef-padding-px
+                                   key-sig-padding-px))
+
+;; Scales for images in /img/small
+;; (Images in that directory are assumed to be a certain size
+;;   because there is no reason they should be changed)
+(define clef-img-scale 160)
 
 ;; Utilities ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -62,19 +70,38 @@
                  (draw-bars-helper (- cnt 1)))))
     (draw-bars-helper 5))
 
+  ;; Internal proc to draw a clef
+  (define (draw-clef y type)
+    (if (equal? type 'treble)
+        (send dc draw-bitmap
+              (make-object bitmap% "../img/small/treble.png" 'png/alpha #f #f (/ clef-img-scale stave-height-px))
+              (+ l-margin-px clef-padding-px)
+              (- y (/ stave-height-px 8)))
+        (send dc draw-bitmap
+              (make-object bitmap% "../img/small/bass.png" 'png/alpha #f #f (/ clef-img-scale stave-height-px))
+              (+ l-margin-px clef-padding-px)
+              (+ y (/ stave-height-px 8)))))
+
+  ;; Internal proc to draw a key signature
+  (define (draw-key-sig y clef key) 'todo)
+        
   ;; Internal proc to draw a set of n staves
   (define (draw-set-of-staves n y)
     (if (= n 0)
         'done
-        (begin (draw-bars (+ y (* (- n 1) (+ stave-height-px stave-gap-px))))
-               (draw-set-of-staves (- n 1) y))))
+        (let ([pos (+ y (* (- n 1) (+ stave-height-px stave-gap-px)))]
+              [current-staff (get-staff score (- n 1))])
+          (begin (draw-bars pos)
+                 (draw-clef pos (get-clef current-staff))
+                 (draw-key-sig pos (get-clef current-staff) (get-key-sig current-staff))
+                 (draw-set-of-staves (- n 1) y)))))
 
   ;; Internal proc to draw the measure bars
   ;; n indicates how many staves
   ;; m indicates how many measures
   (define (draw-measure-bars y n m)
     (define line-height (+ (* n stave-height-px) (* (- n 1) stave-gap-px)))
-    (define measure-width (/ (- page-width-px l-margin-px r-margin-px key-sig-padding-px) m))
+    (define measure-width (/ (- page-width-px l-margin-px r-margin-px clef-key-sig-padding-px) m))
     (define (draw-measure-bars-helper x cnt)
       (if (= cnt 0)
           'done
@@ -84,30 +111,39 @@
       ;; Draw first line
       (send dc draw-line l-margin-px y l-margin-px (+ y line-height))
       ;; Draw the rest of the lines recursively
-      (draw-measure-bars-helper (+ l-margin-px key-sig-padding-px measure-width) m)))
+      (draw-measure-bars-helper (+ l-margin-px clef-key-sig-padding-px measure-width) m)))
   
   ;; Internal proc to draw all staves recursively
   ;; It takes the number of staves
   ;;    and the number of rows of staves in the document
-  (define (draw-all-staves n rows time)
+  (define (draw-all-staves n rows)
     (if (= rows 0)
            'done
            (let ([y (+ top-margin-px
                        (* (- rows 1) n stave-height-px)
                        (* (- rows 1) (- n 1) stave-gap-px)
                        (* (- rows 1) row-gap-px))])
-           (begin (draw-set-of-staves n y)
-                  (draw-measure-bars y n (/ beats-per-line (get-upper time)))
-                  (draw-all-staves n (- rows 1) time)))))
+           (begin
+             ;; Draw a set of staves
+             (draw-set-of-staves n y)
+             ;; Draw measure bars for said set
+             (draw-measure-bars y n (/ beats-per-line (get-upper (get-time-sig score))))
+             ;; Continue for the next one
+             (draw-all-staves n (- rows 1))))))
+
+  ;; Internal proc to draw the time signature
+  ;; It takes the number of staves because the first row of
+  ;;    each stave always displays the time signature
+  (define (draw-time-sig n) 'todo)
   
-  (draw-all-staves (length (get-staves score))
-                   (ceiling (/ (count-beats score) beats-per-line))
-                   (get-time-sig score)))
+  (begin (draw-all-staves (length (get-staves score))
+                          (ceiling (/ (count-beats score) beats-per-line)))
+         (draw-time-sig (length (get-staves score)))))
     
 ;; Drawing the notes ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Draw all notes
-(define (draw-notes score dc) 'foo)
+(define (draw-notes score dc) 'todo)
 
 ;; Render the final document ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -122,25 +158,22 @@
   (define page-height-px (decide-height score))
   (define drawing (make-bitmap page-width-px page-height-px))
   (define dc (new bitmap-dc% [bitmap drawing]))
-  ;;
+  ;; Each of the following procedures are modular
+  ;;   except render, so they can be called in any
+  ;;   order and will not damage each other
   (begin
     ;; Draw a border for the document
     (draw-border page-width-px page-height-px dc)
     ;; Draw all the empty staves
     (draw-blank-staves score dc)
     ;; Draw notes onto the staves
-    ;; (draw-notes score dc)
+    (draw-notes score dc)
     ;; Render the document
     (render drawing)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Experimental Code ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Draw a treble clef on dc at a certain scale s
-(define (draw-treble dc s)
-  (send dc draw-bitmap
-        (make-object bitmap% "../img/small/treble.png" 'png/alpha #f #f s) 0 0))
 
 ;; Create & draw an arbitrary score for verification
 (define my-staff-treble (make-staff 'treble (make-key-sig C)
@@ -169,8 +202,22 @@
                                          (make-note (make-pitch D 4) 1)
                                          (make-note (make-pitch C 4) 1)
                                          (make-note (make-pitch D 4) 2)))
+(define my-staff-vocal (make-staff 'treble (make-key-sig C)
+                                         (make-note (make-pitch C 4) 2)
+                                         (make-note (make-pitch D 4) 2)
+                                         (make-note (make-pitch C 4) 2)
+                                         (make-note (make-pitch D 4) 2)
+                                         (make-note (make-pitch C 4) 2)
+                                         (make-note (make-pitch D 4) 2)
+                                         (make-note (make-pitch C 4) 4)
+                                         (make-note (make-pitch D 4) 4)
+                                         (make-note (make-pitch C 4) 4)
+                                         (make-note (make-pitch D 4) 1)
+                                         (make-note (make-pitch C 4) 1)
+                                         (make-note (make-pitch D 4) 2)))
 (define my-score (make-score (make-time-sig 4 4)
                              60
+                             ;; my-staff-vocal
                              my-staff-treble
                              my-staff-bass))
 (draw my-score)
