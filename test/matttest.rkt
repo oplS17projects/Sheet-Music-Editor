@@ -34,6 +34,10 @@
           (check-equal? (get-duration my-note) 1))))
 
 ; Key Signatures
+(test-case
+ "Creating a key signature - F#"
+ (let ([my-key-sig (make-key-sig F#)])
+   (begin (check-equal? (get-key-type my-key-sig) 'sharp)
+          (check-equal? (get-key-notes my-key-sig) '(F C G D A E))))) 
 
 ; Staves
-  
