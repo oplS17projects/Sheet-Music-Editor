@@ -52,6 +52,8 @@
         [(= note-name Gb) (cons 'flat '(B E A D G C))]
         [(= note-name Cb) (cons 'flat '(B E A D G C F))]
         [else '()]))
+(define get-key-type car)
+(define get-key-notes cdr)
 
 ; A staff is a list of notes
 ; Clef is either 'Treble or 'Bass
