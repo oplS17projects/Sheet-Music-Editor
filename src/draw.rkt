@@ -22,13 +22,16 @@
 ;;   Using TWELVE to make the code simple for 1, 2, 3, or 4 beat measures
 ;;   This will prevent awkward formatting
 ;;   The code will not work for 5, etc, because it does not divide 12
-(define beats-per-line 12)
+(define beats-per-line 16)
 
 ;; How much space to leave for key signature
 (define clef-padding-px 5)
-(define key-sig-padding-px 45)
-(define clef-key-sig-padding-px (+ clef-padding-px
-                                   key-sig-padding-px))
+(define key-sig-padding-px 40)
+(define time-sig-padding-px 80)
+(define signature-width 100)
+
+;; Fonts
+(define time-sig-font (make-font #:size (/ stave-height-px 1.5) #:family 'roman #:weight 'bold))
 
 ;; Scales for images in /img/small
 ;; (Images in that directory are assumed to be a certain size
@@ -101,17 +104,17 @@
   ;; m indicates how many measures
   (define (draw-measure-bars y n m)
     (define line-height (+ (* n stave-height-px) (* (- n 1) stave-gap-px)))
-    (define measure-width (/ (- page-width-px l-margin-px r-margin-px clef-key-sig-padding-px) m))
-    (define (draw-measure-bars-helper x cnt)
+    (define measure-width (/ (- page-width-px l-margin-px r-margin-px signature-width) m))
+    (define (iter x cnt)
       (if (= cnt 0)
           'done
           (begin (send dc draw-line x y x (+ y line-height))
-                 (draw-measure-bars-helper (+ x measure-width) (- cnt 1)))))
+                 (iter (+ x measure-width) (- cnt 1)))))
     (begin
       ;; Draw first line
       (send dc draw-line l-margin-px y l-margin-px (+ y line-height))
       ;; Draw the rest of the lines recursively
-      (draw-measure-bars-helper (+ l-margin-px clef-key-sig-padding-px measure-width) m)))
+      (iter (+ l-margin-px signature-width measure-width) m)))
   
   ;; Internal proc to draw all staves recursively
   ;; It takes the number of staves
@@ -134,8 +137,27 @@
   ;; Internal proc to draw the time signature
   ;; It takes the number of staves because the first row of
   ;;    each stave always displays the time signature
-  (define (draw-time-sig n) 'todo)
-  
+  (define (draw-time-sig n)
+    (define (draw-num m y)
+      (send dc
+            draw-text
+            (number->string m)
+            (+ l-margin-px time-sig-padding-px)
+            y))
+    (define (iter cnt)
+      (if (= 0 cnt)
+          'done
+          (begin
+            (send dc set-font time-sig-font)
+            (draw-num (get-upper (get-time-sig score)) (+ top-margin-px
+                                                          (* (- cnt 1) (+ stave-height-px stave-gap-px))))
+            (draw-num (get-lower (get-time-sig score)) (+ top-margin-px
+                                                          (/ stave-height-px 2)
+                                                          (* (- cnt 1) (+ stave-height-px stave-gap-px))))
+            (iter (- cnt 1)))))
+    (iter n))
+
+  ;; Driver for this procedure
   (begin (draw-all-staves (length (get-staves score))
                           (ceiling (/ (count-beats score) beats-per-line)))
          (draw-time-sig (length (get-staves score)))))
