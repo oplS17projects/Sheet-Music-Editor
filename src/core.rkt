@@ -51,11 +51,11 @@
         [(= note-name Db) (cons 'flat '(B E A D G))]
         [(= note-name Gb) (cons 'flat '(B E A D G C))]
         [(= note-name Cb) (cons 'flat '(B E A D G C F))]
-        [else '()]))
+        [else (cons 'CMajor '())]))
 (define get-key-type car)
 (define get-key-notes cdr)
 (define (sharp? key-sig) (equal? (get-key-type key-sig) 'sharp))
-(define (flat? key-sig) (not (sharp? key-sig)))
+(define (flat? key-sig) (equal? (get-key-type key-sig) 'flat))
 
 ; A staff is a list of notes
 ; Clef is either 'Treble or 'Bass
