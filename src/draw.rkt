@@ -64,7 +64,7 @@
 
 ;; Decide which bar the note goes on, the top bar being 0, first gap being 1, second bar 2, etc.
 (define (find-position clef key pitch)
-  ;; Line mapper decides the offset for each note if it were natural based on the key signature.
+  ;; Line mapper decides the offset for each note if it were natural based on the key signature,
   ;;   C being 0.
   ;;   For instance, if (get-note pitch) is 6, the note is printed on either the F line or the
   ;;   G line, depending on the key signature
@@ -127,8 +127,9 @@
   ;; Internal proc to draw a key signature
   (define (draw-key-sig y clef key)
     (define (determine-octave n)
-      (cond [(or (= n A) (= n B)) 4]
-            [else 5]))
+      (if (equal? clef 'treble)
+          (if (or (= n A) (= n B)) 4 5)
+          (if (or (= n A) (= n B)) 2 3)))
     (define (iter lst x)
       (if (null? lst)
           'done
@@ -222,8 +223,27 @@
     
 ;; Drawing the notes ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Handles drawing objects
+(define (draw-obj obj) 'todo)
+
+;; Draws all objects in the list 'objs'
+(define (draw-stave stave dc)
+  (define (iter objs)
+    (if (null? objs)
+        'done
+        (begin (draw-obj (car objs))
+               (iter (cdr objs)))))
+  (iter (get-notes stave)))
+
 ;; Draw all notes
-(define (draw-notes score dc) 'todo)
+;; *** RECURSION
+(define (draw-notes score dc)
+  (define (iter staves)
+    (if (null? staves)
+        'done
+        (begin (draw-stave (car staves) dc)
+               (iter (cdr staves)))))
+  (iter (get-staves score)))
 
 ;; Render the final document ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -256,7 +276,7 @@
 ;; Experimental Code ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Create & draw an arbitrary score for verification
-(define my-staff-treble (make-staff 'treble (make-key-sig A)
+(define my-staff-treble (make-staff 'treble (make-key-sig B)
                                          (make-note (make-pitch C 4) 2)
                                          (make-note (make-pitch D 4) 2)
                                          (make-note (make-pitch C 4) 2)
@@ -269,7 +289,7 @@
                                          (make-note (make-pitch D 4) 1)
                                          (make-note (make-pitch C 4) 1)
                                          (make-note (make-pitch D 4) 2)))
-(define my-staff-bass (make-staff 'bass (make-key-sig C)
+(define my-staff-bass (make-staff 'bass (make-key-sig B)
                                          (make-note (make-pitch C 4) 2)
                                          (make-note (make-pitch D 4) 2)
                                          (make-note (make-pitch C 4) 2)
@@ -282,7 +302,7 @@
                                          (make-note (make-pitch D 4) 1)
                                          (make-note (make-pitch C 4) 1)
                                          (make-note (make-pitch D 4) 2)))
-(define my-staff-vocal (make-staff 'treble (make-key-sig C)
+(define my-staff-vocal (make-staff 'treble (make-key-sig B)
                                          (make-note (make-pitch C 4) 2)
                                          (make-note (make-pitch D 4) 2)
                                          (make-note (make-pitch C 4) 2)
@@ -297,7 +317,7 @@
                                          (make-note (make-pitch D 4) 2)))
 (define my-score (make-score (make-time-sig 4 4)
                              60
-                             ;; my-staff-vocal
+                             my-staff-vocal
                              my-staff-treble
                              my-staff-bass))
 (draw my-score)
