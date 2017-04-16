@@ -34,6 +34,8 @@
   (cons pitch duration))
 (define get-pitch car)
 (define get-duration cdr)
+(define (rest? note)
+  (= (get-note (get-pitch note)) R))
 
 ; Key Signature
 (define (make-key-sig note-name)
