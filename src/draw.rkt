@@ -26,7 +26,7 @@
 
 ;; How much space to leave for key signature
 (define clef-padding-px 5)
-(define key-sig-padding-px 40)
+(define key-sig-padding-px 60)
 (define time-sig-padding-px 80)
 (define signature-width 100)
 
@@ -36,7 +36,11 @@
 ;; Scales for images in /img/small
 ;; (Images in that directory are assumed to be a certain size
 ;;   because there is no reason they should be changed)
-(define clef-img-scale 160)
+(define clef-img-scale 160) ;; for Clefs
+(define acc-img-scale 500)  ;; for Accidentals
+
+;; No key, used for drawing objects on certain lines but to which no key applies
+(define no-key (make-key-sig C))
 
 ;; Utilities ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -53,6 +57,35 @@
 ;; Draw a border for the document
 (define (draw-border w h dc)
   (send dc draw-rectangle 0 0 w h))
+
+;; Decide which bar the note goes on, the top bar being 0, first gap being 1, second bar 2, etc.
+(define (find-position clef key pitch)
+  ;; Line mapper decides the offset for each note if it were natural based on the key signature.
+  ;;   C being 0.
+  ;;   For instance, if (get-note pitch) is 6, the note is printed on either the F line or the
+  ;;   G line, depending on the key signature
+  ;;   C->0, D->1, E->2, F->3, G->4, A->5, B->6
+  (define (line-mapper is-sharp is-flat n)
+    (cond [(= n 0)  0]                 ;; C
+          [(= n 1)  (if is-sharp 0 1)] ;; C# or Db
+          [(= n 2)  1]                 ;; D
+          [(= n 3)  (if is-sharp 1 2)] ;; D# or Eb
+          [(= n 4)  (if is-flat  3 2)] ;; E  or Fb
+          [(= n 5)  (if is-sharp 2 3)] ;; E# or F
+          [(= n 6)  (if is-sharp 3 4)] ;; F# or Gb
+          [(= n 7)  4]                 ;; G
+          [(= n 8)  (if is-sharp 4 5)] ;; G# or Ab
+          [(= n 9)  5]                 ;; A
+          [(= n 10) (if is-sharp 5 6)] ;; A# or Bb
+          [else     (if is-flat  0 6)] ;; B  or Cb or ERROR
+          ))
+  ;; Helper function takes the note and octave represented by the topmost bar.
+  ;;   This is because drawing will start at that position
+  (define (find-position-helper note0 octave0)
+    (- (* 7 (- octave0 (get-octave pitch))) (- (line-mapper (sharp? key) (flat? key) (get-note pitch))
+                                               (line-mapper #f #f note0))))
+  (cond [(equal? clef 'treble) (find-position-helper F 5)]
+        [else (find-position-helper A 3)]))
 
 ;; Drawing the staves ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -77,16 +110,29 @@
   (define (draw-clef y type)
     (if (equal? type 'treble)
         (send dc draw-bitmap
-              (make-object bitmap% "../img/small/treble.png" 'png/alpha #f #f (/ clef-img-scale stave-height-px))
+              (make-object bitmap% "../img/small/treble.png" 'png/alpha #f #f
+                (/ clef-img-scale stave-height-px))
               (+ l-margin-px clef-padding-px)
               (- y (/ stave-height-px 8)))
         (send dc draw-bitmap
-              (make-object bitmap% "../img/small/bass.png" 'png/alpha #f #f (/ clef-img-scale stave-height-px))
+              (make-object bitmap% "../img/small/bass.png" 'png/alpha #f #f
+                (/ clef-img-scale stave-height-px))
               (+ l-margin-px clef-padding-px)
               (+ y (/ stave-height-px 8)))))
 
   ;; Internal proc to draw a key signature
-  (define (draw-key-sig y clef key) 'todo)
+  (define (draw-key-sig y clef key)
+    (define (iter lst x)
+      (if (null? lst)
+          'done
+          (begin (send dc draw-bitmap
+                       (make-object bitmap% "../img/small/sharp.png" 'png/alpha #f #f
+                         (/ acc-img-scale stave-height-px))
+                         x
+                         (+ y (* (find-position clef no-key (make-pitch G 4)) (/ stave-height-px 8))
+                            (- (/ stave-height-px 2.5))))
+          (iter (cdr lst) (+ x 5)))))
+  (iter (get-key-notes key) key-sig-padding-px))
         
   ;; Internal proc to draw a set of n staves
   (define (draw-set-of-staves n y)
@@ -198,7 +244,7 @@
 ;; Experimental Code ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Create & draw an arbitrary score for verification
-(define my-staff-treble (make-staff 'treble (make-key-sig C)
+(define my-staff-treble (make-staff 'treble (make-key-sig G)
                                          (make-note (make-pitch C 4) 2)
                                          (make-note (make-pitch D 4) 2)
                                          (make-note (make-pitch C 4) 2)
