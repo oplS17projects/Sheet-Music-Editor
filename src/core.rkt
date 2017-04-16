@@ -54,6 +54,8 @@
         [else '()]))
 (define get-key-type car)
 (define get-key-notes cdr)
+(define (sharp? key-sig) (equal? (get-key-type key-sig) 'sharp))
+(define (flat? key-sig) (not (sharp? key-sig)))
 
 ; A staff is a list of notes
 ; Clef is either 'Treble or 'Bass
