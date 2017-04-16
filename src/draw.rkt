@@ -8,6 +8,10 @@
 
 ;; Constants ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Namespace stuff
+(define-namespace-anchor anc)
+(define ns (namespace-anchor->namespace anc))
+
 ;; Document size properties
 (define page-width-px 850)
 (define top-margin-px 100)
@@ -27,7 +31,7 @@
 ;; How much space to leave for key signature
 (define clef-padding-px 5)
 (define key-sig-padding-px 60)
-(define time-sig-padding-px 80)
+(define time-sig-padding-px 120)
 (define signature-width 100)
 
 ;; Fonts
@@ -122,17 +126,25 @@
 
   ;; Internal proc to draw a key signature
   (define (draw-key-sig y clef key)
+    (define (determine-octave n)
+      (cond [(or (= n A) (= n B)) 4]
+            [else 5]))
     (define (iter lst x)
       (if (null? lst)
           'done
           (begin (send dc draw-bitmap
-                       (make-object bitmap% "../img/small/sharp.png" 'png/alpha #f #f
+                       (make-object bitmap% (if (sharp? key)
+                                                "../img/small/sharp.png"
+                                                "../img/small/flat.png")
+                                                'png/alpha #f #f
                          (/ acc-img-scale stave-height-px))
                          x
-                         (+ y (* (find-position clef no-key (make-pitch G 4)) (/ stave-height-px 8))
+                         (+ y (* (find-position clef no-key (make-pitch (eval (car lst) ns)
+                                                                        (determine-octave (eval (car lst) ns))))
+                                 (/ stave-height-px 8))
                             (- (/ stave-height-px 2.5))))
-          (iter (cdr lst) (+ x 5)))))
-  (iter (get-key-notes key) key-sig-padding-px))
+                 (iter (cdr lst) (+ x (/ (- time-sig-padding-px key-sig-padding-px) (length (get-key-notes key))))))))
+    (iter (get-key-notes key) key-sig-padding-px))
         
   ;; Internal proc to draw a set of n staves
   (define (draw-set-of-staves n y)
@@ -244,7 +256,7 @@
 ;; Experimental Code ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Create & draw an arbitrary score for verification
-(define my-staff-treble (make-staff 'treble (make-key-sig G)
+(define my-staff-treble (make-staff 'treble (make-key-sig A)
                                          (make-note (make-pitch C 4) 2)
                                          (make-note (make-pitch D 4) 2)
                                          (make-note (make-pitch C 4) 2)
