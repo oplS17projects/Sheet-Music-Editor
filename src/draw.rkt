@@ -244,10 +244,11 @@
   (define (draw-note pitch duration x y)
     (send dc draw-bitmap
           (make-object bitmap%
-            (cond [(= duration 0.5) "../img/small/eighth.png"]
-                  [(= duration 1) "../img/small/quarter.png"]
-                  [(= duration 2) "../img/small/half.png"]
-                  [(= duration 4) "../img/small/whole.png"])
+            (let ([lower (get-lower (get-time-sig score))])
+              (cond [(= duration (* 0.125 lower)) "../img/small/eighth.png"]
+                    [(= duration (* 0.250 lower)) "../img/small/quarter.png"]
+                    [(= duration (* 0.500 lower)) "../img/small/half.png"]
+                    [(= duration (* 1.000 lower)) "../img/small/whole.png"]))
             'png/alpha #f #f
             (/ note-img-scale stave-height-px))
           x
@@ -350,7 +351,7 @@
                                          (make-note (make-pitch D 4) 1)
                                          (make-note (make-pitch C 4) 1)
                                          (make-note (make-pitch D 4) 1)))
-(define my-score (make-score (make-time-sig 4 4)
+(define my-score (make-score (make-time-sig 2 2)
                              60
                              ;;my-staff-vocal
                              my-staff-treble
