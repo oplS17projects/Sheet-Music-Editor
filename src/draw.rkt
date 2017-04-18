@@ -44,11 +44,22 @@
 (define clef-img-scale 160) ;; for Clefs
 (define acc-img-scale 500)  ;; for Accidentals
 (define note-img-scale 160) ;; for Notes and Rests
+(define note-offset-px (- (* 2.5 (/ stave-height-px 4))))
 
 ;; No key, used for drawing objects on certain lines but to which no key applies
 (define no-key (make-key-sig C))
 
 ;; Utilities ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Offsets for rests are dynamic and include (x,y components)
+(define (rest-offset-px duration measure-width)
+  (cond [(= duration 0.5) (cons 0 (* 1.2 (/ stave-height-px 4)))] ;; Eighth
+        [(= duration 1.0) (cons 0 (* 0.5 (/ stave-height-px 4)))] ;; Quarter
+        [(= duration 2.0) (cons (/ measure-width 7)
+                                (* 1.5 (/ stave-height-px 4)))] ;; Half
+        [(= duration 4.0) (cons (/ measure-width 3)
+                                (* 1.0 (/ stave-height-px 4)))] ;; Whole
+        [else (cons 0 0)]))
 
 ;; Decides the height of bitmap based on number of lines in the score
 (define (decide-height score)
@@ -230,18 +241,22 @@
   ;; Handle drawing objects
   ;; An object is a note or a rest
   (define (draw-rest duration x y)
-    (send dc draw-bitmap
-          (make-object bitmap%
-            (cond [(= duration 0.5) "../img/small/eighth_rest.png"]
-                  [(= duration 1) "../img/small/quarter_rest.png"]
-                  [(= duration 2) "../img/small/half_rest.png"]
-                  [(= duration 4) "../img/small/whole_rest.png"])
+      (send dc draw-bitmap
+            (make-object bitmap%
+              (let ([lower (get-lower (get-time-sig score))])
+                (cond [(= duration (* 0.125 lower)) "../img/small/eighth_rest.png"]
+                    [(= duration (* 0.250 lower)) "../img/small/quarter_rest.png"]
+                    [(= duration (* 0.500 lower)) "../img/small/half_rest.png"]
+                    [(= duration (* 1.000 lower)) "../img/small/whole_rest.png"]))
             'png/alpha #f #f
             (/ note-img-scale stave-height-px))
-          x
-          y))
+      (+ x (car (rest-offset-px (/ (* 4 duration) (get-lower (get-time-sig score)))
+                                (/ (- page-width-px l-margin-px r-margin-px)
+                                   (/ beats-per-line (get-lower (get-time-sig score)))))))
+      (+ y (cdr (rest-offset-px (/ (* 4 duration) (get-lower (get-time-sig score)))
+                                0)))))
   
-  (define (draw-note pitch duration x y)
+  (define (draw-note clef key pitch duration x y)
     (send dc draw-bitmap
           (make-object bitmap%
             (let ([lower (get-lower (get-time-sig score))])
@@ -252,12 +267,12 @@
             'png/alpha #f #f
             (/ note-img-scale stave-height-px))
           x
-          y))
+          (+ y (* (find-position clef key pitch) (/ stave-height-px 8)) note-offset-px)))
   
-  (define (draw-obj obj x y)
+  (define (draw-obj clef key obj x y)
     (begin (if (rest? obj)
                (draw-rest (get-duration obj) x y)
-               (draw-note (get-pitch obj) (get-duration obj) x y))
+               (draw-note clef key (get-pitch obj) (get-duration obj) x y))
            (* (get-duration obj) beat-size-px)))
     
 
@@ -266,7 +281,7 @@
     (define (iter objs x)
       (if (null? objs)
         'done
-        (begin (iter (cdr objs) (+ x (draw-obj (car objs) x y))))))
+        (begin (iter (cdr objs) (+ x (draw-obj (get-clef stave) (get-key-sig stave) (car objs) x y))))))
     (iter (get-notes stave) (+ l-margin-px signature-width (/ beat-size-px 16))))
   
   ;; Draw all notes
@@ -312,46 +327,41 @@
 ;; Experimental Code ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Create & draw an arbitrary score for verification
-(define my-staff-treble (make-staff 'treble (make-key-sig B)
+(define my-staff-treble (make-staff 'treble (make-key-sig C)
                                          (make-note (make-pitch C 4) 1)
                                          (make-note (make-pitch D 4) 1)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)
-                                         (make-note (make-pitch C 4) 0.5)
+                                         (make-note (make-pitch E 4) 1)
+                                         (make-note (make-pitch F 4) 1)
+                                         (make-note (make-pitch G 4) 1)
+                                         (make-note (make-pitch R 0) 1)
+                                         (make-note (make-pitch A 4) 0.5)
                                          (make-note (make-pitch R 0) 0.5)
-                                         (make-note (make-pitch C 4) 1)
+                                         (make-note (make-pitch B 4) 1)
                                          (make-note (make-pitch R 0) 1)
-                                         (make-note (make-pitch R 0) 1)
-                                         (make-note (make-pitch D 4) 2)
+                                         (make-note (make-pitch D 5) 1)
+                                         (make-note (make-pitch E 5) 1)))
+(define my-staff-bass (make-staff 'bass (make-key-sig C)
+                                         (make-note (make-pitch A 2) 1)
+                                         (make-note (make-pitch B 2) 1)
                                          (make-note (make-pitch R 0) 2)
-                                         (make-note (make-pitch R 0) 4)))
-(define my-staff-bass (make-staff 'bass (make-key-sig B)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)))
-(define my-staff-vocal (make-staff 'treble (make-key-sig B)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)))
-(define my-score (make-score (make-time-sig 2 2)
+                                         (make-note (make-pitch R 0) 4)
+                                         (make-note (make-pitch R 0) 2)
+                                         (make-note (make-pitch B 2) 1)
+                                         (make-note (make-pitch A 2) 1)))
+(define my-staff-vocal (make-staff 'treble (make-key-sig C)
+                                         (make-note (make-pitch E 4) 1)
+                                         (make-note (make-pitch E 4) 1)
+                                         (make-note (make-pitch E 4) 1)
+                                         (make-note (make-pitch E 4) 1)
+                                         (make-note (make-pitch F 4) 1)
+                                         (make-note (make-pitch F 4) 1)
+                                         (make-note (make-pitch F 4) 1)
+                                         (make-note (make-pitch F 4) 1)
+                                         (make-note (make-pitch E 4) 1)
+                                         (make-note (make-pitch F 4) 1)
+                                         (make-note (make-pitch E 4) 1)
+                                         (make-note (make-pitch F 4) 1)))
+(define my-score (make-score (make-time-sig 4 4)
                              60
                              ;;my-staff-vocal
                              my-staff-treble
