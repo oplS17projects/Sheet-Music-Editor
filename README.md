@@ -45,12 +45,12 @@ All of these modules work with the data stored in Core, and creates different re
 ## Schedule and Group Responsibilities
 
 ### First Milestone (Sun Apr 9)
-All of the core should be implemented by the first milestone. This will be the underlying code-based representation of the sheet music. At this point we will be interacting with the program using unit tests & the repl (no main driver yet). This will be a joint effort.
+All of the core was be implemented by the first milestone. This is be the underlying code-based representation of the sheet music. At this point we will were interacting with the program using unit tests & the repl (no main driver yet). This was be a joint effort.
 
 ### Second Milestone (Sun Apr 16)
-The two main driver components should be finished by the second milestone. Doug will implement the draw function to create a visual representation of the sheet music. Matt will create a user-input system with buttons and keyboard input to modify the sheet music (adding, removing, modifying notes). By this milestone, the visual aspect of the program will be complete.
+The majority of the two main driver components were be finished by the second milestone. Doug implemented the draw function to create a visual representation of the sheet music, leaving a few details for the next milestone. Matt began creating a user-input system with buttons and keyboard input to modify the sheet music (adding, removing, modifying notes). By this milestone, the visual aspect of the program is mostly established.
 
-### Public Presentation (Mon Apr 24, Wed Apr 26, or Fri Apr 28 [your date to be determined later])
+### Public Presentation (Fri Apr 28 @ Tsongas Arena)
 The final stage will see the implementation of the final two main features. Matt will write the play function(s) and Doug will write the various export functions.
 
 ### Doug Salvati @doug-salvati
