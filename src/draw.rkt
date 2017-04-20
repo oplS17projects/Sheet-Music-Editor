@@ -75,7 +75,7 @@
 (define (draw-border w h dc)
   (send dc draw-rectangle 0 0 w h))
 
-;; Decide which bar the note goes on, the top bar being 0, first gap being 1, second bar 2, etc.
+;; Decide which bar the key signature icon goes on, the top bar being 0, first gap being 1, second bar 2, etc.
 (define (find-position clef key pitch)
   ;; Line mapper decides the offset for each note if it were natural based on the key signature,
   ;;   C being 0.
@@ -98,6 +98,35 @@
           ))
   ;; Helper function takes the note and octave represented by the topmost bar.
   ;;   This is because drawing will start at that position
+  (define (find-position-helper note0 octave0)
+    (- (* 7 (- octave0 (get-octave pitch))) (- (line-mapper (sharp? key) (flat? key) (get-note pitch))
+                                               (line-mapper #f #f note0))))
+  (cond [(equal? clef 'treble) (find-position-helper F 5)]
+        [else (find-position-helper A 3)]))
+
+;; See if a note is in the key signature
+(define (is-in note sig)
+  (if (member note (get-key-notes sig)) #t #f))
+
+;; Similar function, but for the notes
+;; There are important subtle differences
+;; In the previous case, we used # or b depending on the key sig.
+;; Here, we tend to prefer #
+(define (find-note-position clef key pitch)
+  (define (line-mapper is-sharp is-flat n)
+    (cond [(= n 0)  0]                                     ;; C
+          [(= n 1)  (if (and is-flat (is-in 'D key)) 1 0)] ;; C# or Db
+          [(= n 2)  1]                                     ;; D
+          [(= n 3)  (if (and is-flat (is-in 'E key)) 2 1)] ;; D# or Eb
+          [(= n 4)  2]                                     ;; E  or Fb, always go with E-natural
+          [(= n 5)  3]                                     ;; E# or F
+          [(= n 6)  (if (and is-flat (is-in 'G key)) 4 3)] ;; F# or Gb
+          [(= n 7)  4]                                     ;; G
+          [(= n 8)  (if (and is-flat (is-in 'A key)) 5 4)] ;; G# or Ab
+          [(= n 9)  5]                                     ;; A
+          [(= n 10) (if (and is-flat (is-in 'D key)) 6 5)] ;; A# or Bb
+          [else     6]                                     ;; B  or Cb or ERROR
+          ))
   (define (find-position-helper note0 octave0)
     (- (* 7 (- octave0 (get-octave pitch))) (- (line-mapper (sharp? key) (flat? key) (get-note pitch))
                                                (line-mapper #f #f note0))))
@@ -267,7 +296,7 @@
             'png/alpha #f #f
             (/ note-img-scale stave-height-px))
           x
-          (+ y (* (find-position clef key pitch) (/ stave-height-px 8)) note-offset-px)))
+          (+ y (* (find-note-position clef key pitch) (/ stave-height-px 8)) note-offset-px)))
   
   (define (draw-obj clef key obj x y)
     (begin (if (rest? obj)
@@ -327,48 +356,15 @@
 ;; Experimental Code ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Create & draw an arbitrary score for verification
-(define my-staff-treble (make-staff 'treble (make-key-sig C)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)
-                                         (make-note (make-pitch E 4) 1)
+(define my-staff-treble (make-staff 'treble (make-key-sig Cb)
                                          (make-note (make-pitch F 4) 1)
-                                         (make-note (make-pitch G 4) 1)
-                                         (make-note (make-pitch R 0) 1)
-                                         (make-note (make-pitch A 4) 0.5)
-                                         (make-note (make-pitch R 0) 0.5)
-                                         (make-note (make-pitch B 4) 1)
-                                         (make-note (make-pitch R 0) 1)
-                                         (make-note (make-pitch D 5) 1)
-                                         (make-note (make-pitch E 5) 1)))
-(define my-staff-bass (make-staff 'bass (make-key-sig C)
-                                         (make-note (make-pitch A 2) 1)
-                                         (make-note (make-pitch B 2) 1)
-                                         (make-note (make-pitch R 0) 2)
-                                         (make-note (make-pitch R 0) 4)
-                                         (make-note (make-pitch R 0) 2)
-                                         (make-note (make-pitch B 2) 1)
-                                         (make-note (make-pitch A 2) 1)))
-(define my-staff-vocal (make-staff 'treble (make-key-sig C)
-                                         (make-note (make-pitch E 4) 1)
-                                         (make-note (make-pitch E 4) 1)
-                                         (make-note (make-pitch E 4) 1)
-                                         (make-note (make-pitch E 4) 1)
-                                         (make-note (make-pitch F 4) 1)
-                                         (make-note (make-pitch F 4) 1)
-                                         (make-note (make-pitch F 4) 1)
-                                         (make-note (make-pitch F 4) 1)
-                                         (make-note (make-pitch E 4) 1)
-                                         (make-note (make-pitch F 4) 1)
-                                         (make-note (make-pitch E 4) 1)
-                                         (make-note (make-pitch F 4) 1)))
+                                         (make-note (make-pitch F# 4) 1)
+                                         (make-note (make-pitch Fb 4) 1)
+                                         (make-note (make-pitch Gb 4) 1)))
+(define my-staff-bass (make-staff 'bass (make-key-sig C)))
+
 (define my-score (make-score (make-time-sig 4 4)
                              60
-                             ;;my-staff-vocal
-                             my-staff-treble
-                             my-staff-bass))
-(define my-score-2 (make-score (make-time-sig 2 4)
-                             60
-                             my-staff-vocal
                              my-staff-treble
                              my-staff-bass))
 (draw my-score)
