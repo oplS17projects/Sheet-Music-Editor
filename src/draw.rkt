@@ -133,6 +133,31 @@
   (cond [(equal? clef 'treble) (find-position-helper F 5)]
         [else (find-position-helper A 3)]))
 
+;; Similar function, but instead of positions returns what accidental to print
+;; 0 -> none
+;; 1 -> sharp
+;; 2 -> natural
+(define (decide-acc key pitch)
+  (let ([n (get-note pitch)]
+        [is-flat (flat? key)]
+        [is-sharp (sharp? key)])
+    (cond [(= n 0)  (if (is-in 'C key) 2 0)] ;; C
+          [(= n 1)  (if (is-in 'C key) 0 1)] ;; C# or Db
+          [(= n 2)  (if (is-in 'D key) 2 0)] ;; D
+          [(= n 3)  (if (is-in 'D key) 0 1)] ;; D# or Eb
+          [(= n 4)  (if (is-in 'E key) 2 0)] ;; E  or Fb, always go with E-natural
+          [(= n 5)  (if (is-in 'F key) 2 0)] ;; E# or F
+          [(= n 6)  (if (is-in 'F key) 0 1)] ;; F# or Gb
+          [(= n 7)  (if (is-in 'G key) 2 0)] ;; G
+          [(= n 8)  (if (is-in 'G key) 0 1)] ;; G# or Ab
+          [(= n 9)  (if (is-in 'A key) 2 0)] ;; A
+          [(= n 10) (if (is-in 'A key) 0 1)] ;; A# or Bb
+          [else     (if (is-in 'B key) 2 0)] ;; B  or Cb or ERROR
+          )))
+    
+
+  
+
 ;; Drawing the staves ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Draw blank staves, including clef, time sig, key, and measures
@@ -286,7 +311,9 @@
                                 0)))))
   
   (define (draw-note clef key pitch duration x y)
-    (send dc draw-bitmap
+    (begin
+      ;; Note
+      (send dc draw-bitmap
           (make-object bitmap%
             (let ([lower (get-lower (get-time-sig score))])
               (cond [(= duration (* 0.125 lower)) "../img/small/eighth.png"]
@@ -296,7 +323,18 @@
             'png/alpha #f #f
             (/ note-img-scale stave-height-px))
           x
-          (+ y (* (find-note-position clef key pitch) (/ stave-height-px 8)) note-offset-px)))
+          (+ y (* (find-note-position clef key pitch) (/ stave-height-px 8)) note-offset-px))
+      ;; Accidental
+      (send dc draw-bitmap
+          (make-object bitmap%
+            (let ([acc (decide-acc key pitch)])
+              (cond [(= acc 0) "fakepath"] ;; no path => no image
+                    [(= acc 1) "../img/small/sharp.png"]
+                    [(= acc 2) "../img/small/natural.png"]))
+            'png/alpha #f #f
+            (/ acc-img-scale stave-height-px))
+          (- x 10)
+          (+ y (* (find-note-position clef key pitch) (/ stave-height-px 8)) note-offset-px))))
   
   (define (draw-obj clef key obj x y)
     (begin (if (rest? obj)
@@ -356,11 +394,11 @@
 ;; Experimental Code ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Create & draw an arbitrary score for verification
-(define my-staff-treble (make-staff 'treble (make-key-sig Cb)
-                                         (make-note (make-pitch F 4) 1)
-                                         (make-note (make-pitch F# 4) 1)
-                                         (make-note (make-pitch Fb 4) 1)
-                                         (make-note (make-pitch Gb 4) 1)))
+(define my-staff-treble (make-staff 'treble (make-key-sig A)
+                                         (make-note (make-pitch C 4) 1)
+                                         (make-note (make-pitch C# 4) 1)
+                                         (make-note (make-pitch Db 4) 1)
+                                         (make-note (make-pitch D 4) 1)))
 (define my-staff-bass (make-staff 'bass (make-key-sig C)))
 
 (define my-score (make-score (make-time-sig 4 4)
