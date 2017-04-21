@@ -83,7 +83,7 @@
   ;;   G line, depending on the key signature
   ;;   C->0, D->1, E->2, F->3, G->4, A->5, B->6
   (define (line-mapper is-sharp is-flat n)
-    (cond [(= n 0)  0]                 ;; C
+    (cond [(= n 0)  0]                 ;; B# or C
           [(= n 1)  (if is-sharp 0 1)] ;; C# or Db
           [(= n 2)  1]                 ;; D
           [(= n 3)  (if is-sharp 1 2)] ;; D# or Eb
@@ -114,7 +114,7 @@
 ;; Here, we tend to prefer #
 (define (find-note-position clef key pitch)
   (define (line-mapper is-sharp is-flat n)
-    (cond [(= n 0)  0]                                     ;; C
+    (cond [(= n 0)  0]                                     ;; B# or C
           [(= n 1)  (if (and is-flat (is-in 'D key)) 1 0)] ;; C# or Db
           [(= n 2)  1]                                     ;; D
           [(= n 3)  (if (and is-flat (is-in 'E key)) 2 1)] ;; D# or Eb
@@ -124,7 +124,7 @@
           [(= n 7)  4]                                     ;; G
           [(= n 8)  (if (and is-flat (is-in 'A key)) 5 4)] ;; G# or Ab
           [(= n 9)  5]                                     ;; A
-          [(= n 10) (if (and is-flat (is-in 'D key)) 6 5)] ;; A# or Bb
+          [(= n 10) (if (and is-flat (is-in 'B key)) 6 5)] ;; A# or Bb
           [else     6]                                     ;; B  or Cb or ERROR
           ))
   (define (find-position-helper note0 octave0)
@@ -133,7 +133,7 @@
   (cond [(equal? clef 'treble) (find-position-helper F 5)]
         [else (find-position-helper A 3)]))
 
-;; Similar function, but instead of positions returns what accidental to print
+;; Similar function, but instead of positions returns which accidental to print
 ;; 0 -> none
 ;; 1 -> sharp
 ;; 2 -> natural
@@ -141,18 +141,18 @@
   (let ([n (get-note pitch)]
         [is-flat (flat? key)]
         [is-sharp (sharp? key)])
-    (cond [(= n 0)  (if (is-in 'C key) 2 0)] ;; C
-          [(= n 1)  (if (is-in 'C key) 0 1)] ;; C# or Db
-          [(= n 2)  (if (is-in 'D key) 2 0)] ;; D
-          [(= n 3)  (if (is-in 'D key) 0 1)] ;; D# or Eb
-          [(= n 4)  (if (is-in 'E key) 2 0)] ;; E  or Fb, always go with E-natural
-          [(= n 5)  (if (is-in 'F key) 2 0)] ;; E# or F
-          [(= n 6)  (if (is-in 'F key) 0 1)] ;; F# or Gb
-          [(= n 7)  (if (is-in 'G key) 2 0)] ;; G
-          [(= n 8)  (if (is-in 'G key) 0 1)] ;; G# or Ab
-          [(= n 9)  (if (is-in 'A key) 2 0)] ;; A
-          [(= n 10) (if (is-in 'A key) 0 1)] ;; A# or Bb
-          [else     (if (is-in 'B key) 2 0)] ;; B  or Cb or ERROR
+    (cond [(= n 0)  (if (and (is-in 'B key) is-sharp) 0 (if (is-in 'C key) 2 0))]               ;; B# or C
+          [(= n 1)  (if (and (is-in 'C key) is-sharp) 0 (if (and (is-in 'D key) is-flat) 0 1))] ;; C# or Db
+          [(= n 2)  (if (is-in 'D key) 2 0)]                                                    ;; D
+          [(= n 3)  (if (and (is-in 'D key) is-sharp) 0 (if (and (is-in 'E key) is-flat) 0 1))] ;; D# or Eb
+          [(= n 4)  (if (or (is-in 'E key) (and (is-in 'F key) is-flat)) 2 0)]                  ;; E  or Fb
+          [(= n 5)  (if (and (is-in 'E key) is-sharp) 0 (if (is-in 'F key) 2 0))]               ;; E# or F
+          [(= n 6)  (if (and (is-in 'F key) is-sharp) 0 (if (and (is-in 'G key) is-flat) 0 1))] ;; F# or Gb
+          [(= n 7)  (if (is-in 'G key) 2 0)]                                                    ;; G
+          [(= n 8)  (if (and (is-in 'G key) is-sharp) 0 (if (and (is-in 'A key) is-flat) 0 1))] ;; G# or Ab
+          [(= n 9)  (if (is-in 'A key) 2 0)]                                                    ;; A
+          [(= n 10) (if (and (is-in 'A key) is-sharp) 0 (if (and (is-in 'B key) is-flat) 0 1))] ;; A# or Bb
+          [else     (if (or (is-in 'B key) (and (is-in 'C key) is-flat)) 2 0)]                  ;; B  or Cb (or ERROR)
           )))
     
 
@@ -411,14 +411,14 @@
 ;; Experimental Code ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Create & draw an arbitrary score for verification
-(define my-staff-treble (make-staff 'treble (make-key-sig C)
-                                         (make-note (make-pitch A 4) 1)
+(define my-staff-treble (make-staff 'treble (make-key-sig F)
                                          (make-note (make-pitch B 4) 1)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)
+                                         (make-note (make-pitch B# 5) 1)
+                                         (make-note (make-pitch Bb 4) 1)
+                                         (make-note (make-pitch R 4) 1)
                                          ;;
                                          (make-note (make-pitch A 4) 1)
-                                         (make-note (make-pitch B 4) 1)
+                                         (make-note (make-pitch Bb 4) 1)
                                          (make-note (make-pitch C 4) 1)
                                          (make-note (make-pitch D 4) 1)
                                          ;;

@@ -2,6 +2,7 @@
 
 ; Note names
 (define R -1) ; rest
+(define B# 0)
 (define C 0)
 (define C# 1)
 (define Db 1)
