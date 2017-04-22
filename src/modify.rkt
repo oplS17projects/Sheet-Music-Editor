@@ -2,6 +2,8 @@
 
 (require "core.rkt")
 
+; EDIT INFO MODIFIERS
+
 ; Change the current note index
 ; Change is the number of notes to move it
 ;   Negative is left, positive is right
@@ -13,12 +15,19 @@
       edit-info
       (make-edit-info (get-current-staff edit-info)
                       (+ (get-current-index edit-info) change))))
+; Some short-hand procedures
+(define (move-to-next-note score edit-info)
+  (change-current-note-index score edit-info 1))
+(define (move-to-previous-note score edit-info)
+  (change-current-note-index score edit-info -1))
 
 ; Change current staff
 ; Will be selected from drop-down
 (define (change-current-staff edit-info staff-index)
   (make-edit-info staff-index (get-current-index edit-info)))
 
+
+; NOTE MODIFIERS
 
 ; ***MAP***
 ; Map procedure that keeps track of index
@@ -50,6 +59,25 @@
                                  s))
                            (get-staves score))))
 
+
+; STAFF/SCORE MODIFIERS
+
+; ***MAP***
+; Change key signature of a staff
+(define (change-key-signature score staff-index note-name)
+  (make-score (get-time-sig score)
+              (get-tempo score)
+              (indexed-map (lambda (s i)
+                             (if (equal? staff-index i)
+                                 (make-staff (get-clef s)
+                                             (make-key-sig note-name)
+                                             (get-notes s))
+                                 s))
+                           (get-staves score))))
+
+
+; UTILITY PROCEDURES
+
 ; Converts a pitch to a midi number
 (define (pitch-to-midi pitch)
   (+ (get-note pitch) (* (- (get-octave pitch) 1) 12)))
@@ -73,6 +101,7 @@
 ; Calculates duration of new note based on note-length and time signature
 (define (calculate-duration time-sig note-length)
   (* note-length (get-lower time-sig)))
+
 
 (define n (make-note (make-pitch C 4) 4))
 (define st (make-staff 'Treble (make-key-sig F) (list n n n n n)))
