@@ -3,6 +3,7 @@
 (require "core.rkt")
 
 ; ***MAP***
+; Map procedure that keeps track of index
 (define (indexed-map proc lst)
   (define (imap-helper lst result index)
     (if (null? lst)
@@ -22,15 +23,31 @@
                                                      (list (make-note
                                                             (make-pitch note-name
                                                                         (get-nearest-octave
-                                                                         (last (get-notes s))))
+                                                                         (last (get-notes s))
+                                                                         note-name))
                                                             (calculate-duration
                                                              (get-time-sig score)
                                                              note-length)))))
                                  s))
                            (get-staves score))))
 
-(define (get-nearest-octave previous-note)
-  (get-octave previous-note))
+(define (pitch-to-midi pitch)
+  (+ (get-note pitch) (* (- (get-octave pitch) 1) 12)))
+
+(define (get-nearest-octave previous-note note-name)
+  (let ([previous-octave (get-octave (get-pitch previous-note))]
+        [base-score (pitch-to-midi (get-pitch previous-note))])
+    (let ([same-octave-score (abs (- (pitch-to-midi (make-pitch note-name previous-octave))
+                                     base-score))]
+          [up-octave-score (abs (- (pitch-to-midi (make-pitch note-name (+ previous-octave 1)))
+                                   base-score))]
+          [down-octave-score (abs ( - (pitch-to-midi (make-pitch note-name (- previous-octave 1)))
+                                      base-score))])
+      (cond [(and (< same-octave-score up-octave-score) (< same-octave-score down-octave-score))
+             previous-octave]
+            [(and (< up-octave-score same-octave-score) (< up-octave-score down-octave-score))
+             (+ previous-octave 1)]
+            [else (- previous-octave 1)]))))
 
 (define (calculate-duration time-sig note-length)
   (* note-length (get-lower time-sig)))
