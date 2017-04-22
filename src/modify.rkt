@@ -2,6 +2,8 @@
 
 (require "core.rkt")
 
+(define max-staves 3)
+
 ; EDIT INFO MODIFIERS
 
 ; Change the current note index
@@ -28,15 +30,6 @@
 
 
 ; NOTE MODIFIERS
-
-; ***MAP***
-; Map procedure that keeps track of index
-(define (indexed-map proc lst)
-  (define (imap-helper lst result index)
-    (if (null? lst)
-        result
-        (imap-helper (cdr lst) (append result (list (proc (car lst) index))) (+ index 1))))
-  (imap-helper lst '() 0))
 
 ; ***MAP***
 ; Adds note to end of staff
@@ -75,22 +68,40 @@
                                  s))
                            (get-staves score))))
 
-; ***MAP***
 ; Change time signature of a score
 (define (change-time-signature score upper lower)
   (make-score (make-time-sig upper lower)
               (get-tempo score)
               (get-staves score)))
 
-; ***MAP***
 ; Change tempo of a score
 (define (change-tempo score tempo)
   (make-score (get-time-sig score)
               tempo
               (get-staves score)))
 
+; Add a staff to the score
+(define (add-staff score clef key-name)
+  (if (< (length (get-staves score)) max-staves)
+      (make-score (get-time-sig score)
+                  (get-tempo score)
+                  (append (get-staves score)
+                          (list (make-staff clef
+                                            (make-key-sig key-name)
+                                            '()))))
+      score))
+
 
 ; UTILITY PROCEDURES
+
+; ***MAP***
+; Map procedure that keeps track of index
+(define (indexed-map proc lst)
+  (define (imap-helper lst result index)
+    (if (null? lst)
+        result
+        (imap-helper (cdr lst) (append result (list (proc (car lst) index))) (+ index 1))))
+  (imap-helper lst '() 0))
 
 ; Converts a pitch to a midi number
 (define (pitch-to-midi pitch)
