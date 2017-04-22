@@ -42,7 +42,7 @@
 
 ; ***MAP***
 ; ***ABSTRACTION***
-; Modifies notes with some procedure
+; Modifies LIST OF NOTES with some procedure
 (define (modify-notes score staff-index proc)
   (make-score (get-time-sig score)
               (get-tempo score)
@@ -53,6 +53,19 @@
                                              (proc (get-notes s)))
                                  s))
                            (get-staves score))))
+
+; ***MAP***
+; ***ABSTRACTION***
+; Modifies INDIVIDUAL NOTE with some procedure
+(define (modify-note score edit-info proc)
+  (modify-notes score
+                (get-current-staff edit-info)
+                (lambda (notes)
+                  (indexed-map (lambda (n i)
+                                 (if (= i (get-current-index edit-info))
+                                     (proc n)
+                                     n))
+                               notes))))
 
 ; ***ABSTRACTION***
 ; Adds note to end of staff
@@ -79,31 +92,21 @@
 (define (change-note score edit-info type modification)
   (cond [(eq? type 'shift)
          (let ([shift modification])
-           (modify-notes score
-                         (get-current-staff edit-info)
-                         (lambda (notes)
-                           (indexed-map (lambda (n i)
-                                          (if (= i (get-current-index edit-info))
-                                              (shift-note n shift)
-                                              n))
-                                        notes))))]
+           (modify-note score
+                        edit-info
+                        (lambda (n) (shift-note n shift))))]
         [(eq? type 'name)
          (let ([note-name modification])
-           (modify-notes score
-                         (get-current-staff edit-info)
-                         (lambda (notes)
-                           (indexed-map (lambda (n i)
-                                          (if (= i (get-current-index edit-info))
-                                              (make-note
-                                               (make-pitch note-name
-                                                           (get-nearest-octave
-                                                            n
-                                                            note-name))
-                                               (get-duration n))
-                                              n))
-                                        notes))))]))
+           (modify-note score
+                        edit-info
+                        (lambda (n)
+                          (make-note
+                           (make-pitch note-name
+                                       (get-nearest-octave
+                                        n
+                                        note-name))
+                           (get-duration n)))))]))
                                               
-
 
 ; TRANSPOSITION PROCEDURES
 
