@@ -31,6 +31,15 @@
 
 ; NOTE MODIFIERS
 
+; Shifts note up or down
+; shift is the number of half-steps to shift
+; A negative value represents down and positive value up
+(define (shift-note note shift)
+  (if (= R (get-note (get-pitch note)))
+      note
+      (make-note (midi-to-pitch (+ shift (pitch-to-midi (get-pitch note))))
+                 (get-duration note))))
+
 ; ***MAP***
 ; Adds note to end of staff
 (define (add-note score staff-index note-length note-name)
@@ -106,6 +115,9 @@
 ; Converts a pitch to a midi number
 (define (pitch-to-midi pitch)
   (+ (get-note pitch) (* (- (get-octave pitch) 1) 12)))
+; Converts a midi number to a pitch
+(define (midi-to-pitch midi)
+  (make-pitch (modulo midi 12) (+ 1 (floor (/ midi 12)))))
 
 ; For adding a new note, finds best octave for new note based on previous note
 (define (get-nearest-octave previous-note note-name)
