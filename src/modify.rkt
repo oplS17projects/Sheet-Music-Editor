@@ -2,7 +2,7 @@
 
 (require "core.rkt")
 
-(define max-staves 3)
+(define max-staves 2)
 
 ; EDIT INFO MODIFIERS
 
@@ -166,6 +166,15 @@
                                             '()))))
       score))
 
+; ***FILTER***
+; Remove a staff from the score
+(define (remove-staff score edit-info)
+  (make-score (get-time-sig score)
+              (get-tempo score)
+              (indexed-filter
+               (lambda (s i) (= (get-current-staff edit-info) i))
+               (get-staves score))))
+                            
 
 ; UTILITY PROCEDURES
 
@@ -177,6 +186,19 @@
         result
         (imap-helper (cdr lst) (append result (list (proc (car lst) index))) (+ index 1))))
   (imap-helper lst '() 0))
+
+; ***FILTER***
+; Filter procedure that keeps track of index
+(define (indexed-filter pred lst)
+  (define (ifilter-helper lst result index)
+    (cond [(null? lst)
+           result]
+          [(pred (car lst) index)
+           (ifilter-helper (cdr lst) (append result (list (car lst))) (+ index 1))]
+          [else
+           (ifilter-helper (cdr lst) result (+ index 1))]))
+  (ifilter-helper lst '() 0))
+
 
 ; Converts a pitch to a midi number
 (define (pitch-to-midi pitch)
