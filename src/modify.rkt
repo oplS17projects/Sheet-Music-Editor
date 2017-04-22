@@ -56,9 +56,9 @@
 
 ; ***ABSTRACTION***
 ; Adds note to end of staff
-(define (add-note score staff-index note-length note-name)
+(define (add-note score edit-info note-length note-name)
   (modify-notes score
-                staff-index
+                (get-current-staff edit-info)
                 (lambda (notes)
                   (append notes
                           (list (make-note
@@ -70,14 +70,48 @@
                                   (get-time-sig score)
                                   note-length)))))))
 
+; ***ABSTRACTION***
+; Changes note
+; This is essentially an overloaded function
+; If type equals 'shift, then we shift the note
+; If type equals 'name, then we change the note to the note-name given
+; Let statements are used to rename modification variable for clarity
+(define (change-note score edit-info type modification)
+  (cond [(eq? type 'shift)
+         (let ([shift modification])
+           (modify-notes score
+                         (get-current-staff edit-info)
+                         (lambda (notes)
+                           (indexed-map (lambda (n i)
+                                          (if (= i (get-current-index edit-info))
+                                              (shift-note n shift)
+                                              n))
+                                        notes))))]
+        [(eq? type 'name)
+         (let ([note-name modification])
+           (modify-notes score
+                         (get-current-staff edit-info)
+                         (lambda (notes)
+                           (indexed-map (lambda (n i)
+                                          (if (= i (get-current-index edit-info))
+                                              (make-note
+                                               (make-pitch note-name
+                                                           (get-nearest-octave
+                                                            n
+                                                            note-name))
+                                               (get-duration n))
+                                              n))
+                                        notes))))]))
+                                              
+
 
 ; TRANSPOSITION PROCEDURES
 
 ; Transpose staff
 ; Shift is the number of half-steps to shift
-(define (transpose-staff score staff-index shift)
+(define (transpose-staff score edit-info shift)
   (modify-notes score
-                staff-index
+                (get-current-staff edit-info)
                 (lambda (notes) (map (lambda (n) (shift-note n shift)) notes))))
 
 
@@ -162,3 +196,4 @@
 (define n (make-note (make-pitch C 4) 4))
 (define st (make-staff 'Treble (make-key-sig F) (list n n n n n)))
 (define sc (make-score (make-time-sig 4 4) 100 (list st st)))
+(define ei (make-edit-info 0 0))
