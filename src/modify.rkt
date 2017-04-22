@@ -62,6 +62,23 @@
                            (get-staves score))))
 
 
+; TRANSPOSITION PROCEDURES
+
+; Transpose staff
+; Shift is the number of half-steps to shift
+(define (transpose-staff score staff-index shift)
+  (make-score (get-time-sig score)
+              (get-tempo score)
+              (indexed-map (lambda (s i)
+                             (if (equal? staff-index i)
+                                 (make-staff (get-clef s)
+                                             (get-key-sig s)
+                                             (map (lambda (n) (shift-note n shift))
+                                                  (get-notes s)))
+                                 s))
+                             (get-staves score))))
+
+
 ; STAFF/SCORE MODIFIERS
 
 ; ***MAP***
