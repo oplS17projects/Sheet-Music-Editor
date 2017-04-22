@@ -12,23 +12,22 @@
 
 ; ***MAP***
 (define (add-note score staff-index note-length note-name)
-  (let [(staff (get-staff score staff-index))]
-    (make-score (get-time-sig score)
-                (get-tempo score)
-                (map (lambda (s)
-                          (if (equal? s staff)
-                              (make-staff (get-clef s)
-                                          (get-key-sig s)
-                                          (append (get-notes s)
-                                                  (list (make-note
-                                                         (make-pitch note-name
-                                                                     (get-nearest-octave
-                                                                      (last (get-notes s))))
-                                                         (calculate-duration
-                                                          (get-time-sig score)
-                                                          note-length)))))
-                              s))
-                        (get-staves score)))))
+  (make-score (get-time-sig score)
+              (get-tempo score)
+              (indexed-map (lambda (s i)
+                             (if (equal? staff-index i)
+                                 (make-staff (get-clef s)
+                                             (get-key-sig s)
+                                             (append (get-notes s)
+                                                     (list (make-note
+                                                            (make-pitch note-name
+                                                                        (get-nearest-octave
+                                                                         (last (get-notes s))))
+                                                            (calculate-duration
+                                                             (get-time-sig score)
+                                                             note-length)))))
+                                 s))
+                           (get-staves score))))
 
 (define (get-nearest-octave previous-note)
   (get-octave previous-note))
