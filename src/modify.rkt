@@ -75,6 +75,20 @@
                                  s))
                            (get-staves score))))
 
+; ***MAP***
+; Change time signature of a score
+(define (change-time-signature score upper lower)
+  (make-score (make-time-sig upper lower)
+              (get-tempo score)
+              (get-staves score)))
+
+; ***MAP***
+; Change tempo of a score
+(define (change-tempo score tempo)
+  (make-score (get-time-sig score)
+              tempo
+              (get-staves score)))
+
 
 ; UTILITY PROCEDURES
 
