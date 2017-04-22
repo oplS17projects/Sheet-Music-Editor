@@ -3,6 +3,14 @@
 (require "core.rkt")
 
 ; ***MAP***
+(define (indexed-map proc lst)
+  (define (imap-helper lst result index)
+    (if (null? lst)
+        result
+        (imap-helper (cdr lst) (append result (list (proc (car lst) index))) (+ index 1))))
+  (imap-helper lst '() 0))
+
+; ***MAP***
 (define (add-note score staff-index note-length note-name)
   (let [(staff (get-staff score staff-index))]
     (make-score (get-time-sig score)
