@@ -62,7 +62,7 @@
 
 ; A staff is a list of notes
 ; Clef is either 'Treble or 'Bass
-(define (make-staff clef key-sig . notes)
+(define (make-staff clef key-sig notes)
   (list clef key-sig notes))
 (define get-clef car)
 (define get-key-sig cadr)
@@ -79,7 +79,7 @@
 
 ; A score is list of staves
 ; Tempo is defined in beats per minute
-(define (make-score time-sig tempo . staves)
+(define (make-score time-sig tempo staves)
   (list time-sig tempo staves))
 (define get-time-sig car)
 (define get-tempo cadr)
