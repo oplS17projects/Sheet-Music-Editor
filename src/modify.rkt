@@ -106,6 +106,16 @@
                                         n
                                         note-name))
                            (get-duration n)))))]))
+
+; ***ABSTRACTION***
+; Deletes note (ie turns it into a rest)
+(define (delete-note score edit-info)
+  (modify-note score
+               edit-info
+               (lambda (n)
+                 (make-note
+                  (make-pitch R (get-nearest-octave n R))
+                  (get-duration n)))))
                                               
 
 ; TRANSPOSITION PROCEDURES
