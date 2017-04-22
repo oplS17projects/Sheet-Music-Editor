@@ -41,25 +41,34 @@
                  (get-duration note))))
 
 ; ***MAP***
-; Adds note to end of staff
-(define (add-note score staff-index note-length note-name)
+; ***ABSTRACTION***
+; Modifies notes with some procedure
+(define (modify-notes score staff-index proc)
   (make-score (get-time-sig score)
               (get-tempo score)
               (indexed-map (lambda (s i)
                              (if (equal? staff-index i)
                                  (make-staff (get-clef s)
                                              (get-key-sig s)
-                                             (append (get-notes s)
-                                                     (list (make-note
-                                                            (make-pitch note-name
-                                                                        (get-nearest-octave
-                                                                         (last (get-notes s))
-                                                                         note-name))
-                                                            (calculate-duration
-                                                             (get-time-sig score)
-                                                             note-length)))))
+                                             (proc (get-notes s)))
                                  s))
                            (get-staves score))))
+
+; ***ABSTRACTION***
+; Adds note to end of staff
+(define (add-note score staff-index note-length note-name)
+  (modify-notes score
+                staff-index
+                (lambda (notes)
+                  (append notes
+                          (list (make-note
+                                 (make-pitch note-name
+                                             (get-nearest-octave
+                                              (last notes)
+                                              note-name))
+                                 (calculate-duration
+                                  (get-time-sig score)
+                                  note-length)))))))
 
 
 ; TRANSPOSITION PROCEDURES
@@ -67,16 +76,9 @@
 ; Transpose staff
 ; Shift is the number of half-steps to shift
 (define (transpose-staff score staff-index shift)
-  (make-score (get-time-sig score)
-              (get-tempo score)
-              (indexed-map (lambda (s i)
-                             (if (equal? staff-index i)
-                                 (make-staff (get-clef s)
-                                             (get-key-sig s)
-                                             (map (lambda (n) (shift-note n shift))
-                                                  (get-notes s)))
-                                 s))
-                             (get-staves score))))
+  (modify-notes score
+                staff-index
+                (lambda (notes) (map (lambda (n) (shift-note n shift)) notes))))
 
 
 ; STAFF/SCORE MODIFIERS
