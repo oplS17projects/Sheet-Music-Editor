@@ -165,7 +165,23 @@
                              [parent note-buttons-panel]
                              [label "Insert Note"]
                              [callback (lambda (button event)
-                                         "Insert Note")]))
+                                         (let ([selection
+                                                (send accidental-selector get-selection)]
+                                               [note-name
+                                                (string-to-note-name
+                                                 (send note-name-selector
+                                                       get-string-selection))]
+                                               [note-type
+                                                (send note-length-selector get-selection)])
+                                           (let ([adjustment
+                                                  (if (= selection 2)
+                                                      -1
+                                                      selection)]
+                                                 [note-length
+                                                  (expt 2 note-type)])
+                                             (print (add-note sc ei note-length
+                                                       (modulo
+                                                        (+ note-name adjustment) 12))))))]))
 
 (define change-note-btn (new button%
                              [parent note-buttons-panel]
@@ -181,10 +197,9 @@
                                                   (if (= selection 2)
                                                       -1
                                                       selection)])
-                                             (change-note sc
-                                                          ei
-                                                          'name
-                                                          (+ note-name adjustment)))))]))
+                                             (change-note sc ei 'name
+                                                          (modulo
+                                                           (+ note-name adjustment) 12)))))]))
                                                       
 
 (define delete-note-btn (new button%

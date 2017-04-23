@@ -224,7 +224,7 @@
 
 ;; Calculates duration of new note based on note-length and time signature
 (define (calculate-duration time-sig note-length)
-  (* note-length (get-lower time-sig)))
+  (* (/ (get-lower time-sig) 8) note-length))
 
 (provide (all-defined-out))
 
