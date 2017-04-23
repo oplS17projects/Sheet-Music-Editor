@@ -179,9 +179,9 @@
                                                       selection)]
                                                  [note-length
                                                   (expt 2 note-type)])
-                                             (print (add-note sc ei note-length
+                                             (add-note sc ei note-length
                                                        (modulo
-                                                        (+ note-name adjustment) 12))))))]))
+                                                        (+ note-name adjustment) 12)))))]))
 
 (define change-note-btn (new button%
                              [parent note-buttons-panel]
@@ -206,7 +206,7 @@
                              [parent note-buttons-panel]
                              [label "Delete Note"]
                              [callback (lambda (button event)
-                                         "Delete Note")]))
+                                         (delete-note sc ei))]))
 
 
 ;; STAVES/SCORE PANEL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
