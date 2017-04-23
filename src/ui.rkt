@@ -7,12 +7,20 @@
 ;; HELPER FUNCTIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (string-to-note-name str)
-  (cond [(eq? str "A") A]
+  (cond [(eq? str "Ab") Ab]
+        [(eq? str "A") A]
+        [(eq? str "Bb") Bb]
         [(eq? str "B") B]
+        [(eq? str "Cb") Cb]
         [(eq? str "C") C]
+        [(eq? str "C#") C#]
+        [(eq? str "Db") Db]
         [(eq? str "D") D]
+        [(eq? str "Eb") Eb]
         [(eq? str "E") E]
         [(eq? str "F") F]
+        [(eq? str "F#") F#]
+        [(eq? str "Gb") Gb]
         [(eq? str "G") G]))
 
 ;; LOADING IMAGES ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -269,13 +277,22 @@
                              [parent staves-score-btns-panel1]
                              [label "Change Time Signature"]
                              [callback (lambda (button event)
-                                         "Change Time Signature")]))
+                                         (let ([upper (string->number
+                                                       (send upper-time-sig-selector
+                                                             get-string-selection))]
+                                               [lower (string->number
+                                                       (send lower-time-sig-selector
+                                                             get-string-selection))])
+                                           (change-time-signature sc upper lower)))]))
 
 (define change-key-sig-btn (new button%
                              [parent staves-score-btns-panel1]
                              [label "Change Key Signature"]
                              [callback (lambda (button event)
-                                         "Change Key Signature")]))
+                                         (let ([note-name (string-to-note-name
+                                                           (send key-sig-selector
+                                                                 get-string-selection))])
+                                           (change-key-signature sc ei note-name)))]))
 
 (define staves-score-btns-panel2 (new horizontal-panel%
                                       [parent staves-score-panel]
@@ -285,19 +302,26 @@
                              [parent staves-score-btns-panel2]
                              [label "Change Tempo"]
                              [callback (lambda (button event)
-                                         "Change Tempo")]))
+                                         (change-tempo sc (send tempo-slider get-value)))]))
 
 (define remove-staff-btn (new button%
                              [parent staves-score-btns-panel2]
                              [label "Remove Staff"]
                              [callback (lambda (button event)
-                                         "Remove Staff")]))
+                                         (remove-staff sc ei))]))
 
 (define add-staff-btn (new button%
                              [parent staves-score-btns-panel2]
                              [label "Add Staff"]
                              [callback (lambda (button event)
-                                         "Add Staff")]))
+                                         (let ([note-name (string-to-note-name
+                                                           (send key-sig-selector
+                                                                 get-string-selection))]
+                                               [clef (if (= 0 (send clef-selector
+                                                                  get-selection))
+                                                         'Treble
+                                                         'Bass)])
+                                           (add-staff sc clef note-name)))]))
                                 
                         
 ;; TRANSPOSITION PANEL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -144,11 +144,11 @@
 
 ;; ***MAP***
 ;; Change key signature of a staff
-(define (change-key-signature score staff-index note-name)
+(define (change-key-signature score edit-info note-name)
   (make-score (get-time-sig score)
               (get-tempo score)
               (indexed-map (lambda (s i)
-                             (if (equal? staff-index i)
+                             (if (equal? (get-current-staff edit-info) i)
                                  (make-staff (get-clef s)
                                              (make-key-sig note-name)
                                              (get-notes s))
