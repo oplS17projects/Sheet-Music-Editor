@@ -127,6 +127,18 @@
                 (get-current-staff edit-info)
                 (lambda (notes) (map (lambda (n) (shift-note n shift)) notes))))
 
+;; ***MAP***
+;; Transpose score
+(define (transpose-score score shift)
+  (make-score (get-time-sig score)
+              (get-tempo score)
+              (map (lambda (s)
+                     (make-staff (get-clef s)
+                                 (get-key-sig s)
+                                 (map (lambda (n) (shift-note n shift))
+                                      (get-notes s))))
+                   (get-staves score))))
+
 
 ;; STAFF/SCORE MODIFIERS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
