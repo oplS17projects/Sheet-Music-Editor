@@ -333,12 +333,29 @@
                                  [parent transposition-btn-panel]
                                  [label "Transpose Staff"]
                                  [callback (lambda (button event)
-                                             "Transpose Staff")]))
+                                             (let ([shift-amount
+                                                    (send transposition-slider get-value)]
+                                                   [direction
+                                                    (send transposition-up-down
+                                                          get-selection)])
+                                               (let ([shift
+                                                      (cond [(= direction 0) shift-amount]
+                                                            [else (* -1 shift-amount)])])
+                                                 (transpose-staff sc ei shift))))]))
+
 (define transpose-score-btn (new button%
                                  [parent transposition-btn-panel]
                                  [label "Transpose Score"]
                                  [callback (lambda (button event)
-                                             "Transpose Score")]))
+                                             (let ([shift-amount
+                                                    (send transposition-slider get-value)]
+                                                   [direction
+                                                    (send transposition-up-down
+                                                          get-selection)])
+                                               (let ([shift
+                                                      (cond [(= direction 0) shift-amount]
+                                                            [else (* -1 shift-amount)])])
+                                                 (transpose-score sc shift))))]))
 
 
 (send mother-frame show #t)
