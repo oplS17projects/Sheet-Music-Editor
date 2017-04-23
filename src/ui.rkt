@@ -33,12 +33,19 @@
 (define dc-who (new bitmap-dc% [bitmap whole-note]))
 (send dc-who draw-bitmap whole-note-file 0 0)
 
-(define treble (read-bitmap "../img/small/treble.png"
+(define treble-file (read-bitmap "../img/small/treble.png"
+                               'png #f #t
+                               #:backing-scale 5.0))
+(define treble (make-bitmap 30 50))
+(define dc-tre (new bitmap-dc% [bitmap treble]))
+(send dc-tre draw-bitmap treble-file 0 0)
+
+(define bass-file (read-bitmap "../img/small/bass.png"
                                'png #f #t
                                #:backing-scale 3.0))
-(define bass (read-bitmap "../img/small/bass.png"
-                               'png #f #t
-                               #:backing-scale 3.0))
+(define bass (make-bitmap 40 50))
+(define dc-bas (new bitmap-dc% [bitmap bass]))
+(send dc-bas draw-bitmap bass-file 0 0)
 
 (define natural-file (read-bitmap "../img/small/natural.png"
                                'png #f #t
@@ -64,14 +71,16 @@
 
 ;; MAIN PANEL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define frame (new frame%
-                   [label "Racket Sheet Music Editor - Toolbar"]
-                   [width 400]
-                   [height 400]
-                   [alignment '(left top)]))
+(define mother-frame (new frame%
+                          [label "Racket Sheet Music Editor - Toolbar"]
+                          [width 400]
+                          [height 800]
+                          [alignment '(left top)]))
 
-(define staves-score-panel (new vertical-panel%
-                                [parent frame]))
+(define frame (new vertical-panel%
+                   [parent mother-frame]
+                   [alignment '(left top)]
+                   [style '(auto-vscroll)]))
 
 
 ;; EDIT-INFO PANEL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -157,6 +166,97 @@
                              [label "Delete Note"]
                              [callback (lambda (button event)
                                          "Delete Note")]))
+
+
+;; STAVES/SCORE PANEL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define staves-score-panel (new group-box-panel%
+                                [label "Staves/Score"]
+                                [horiz-margin 10]
+                                [vert-margin 10]
+                                [border 10]
+                                [parent frame]
+                                [alignment '(center top)]))
+
+(define staves-score-options-panel (new horizontal-panel%
+                                        [parent staves-score-panel]
+                                        [alignment '(center top)]
+                                        [horiz-margin 10]
+                                        [vert-margin 10]
+                                        [border 10]))
+
+(define clef-panel (new vertical-panel%
+                        [parent staves-score-options-panel]
+                        [alignment '(center center)]))
+
+(define clef-selector (new radio-box%
+                           [parent clef-panel]
+                           [label "Clef"]
+                           [choices (list treble bass)]))
+
+(define time-sig-panel (new vertical-panel%
+                            [parent staves-score-options-panel]
+                            [alignment '(right center)]))
+
+(define key-sig-selector (new choice%
+                              [parent time-sig-panel]
+                              [label "Key Signature "]
+                              [choices '("C" "G" "D" "A" "E" "B" "F#" "C#"
+                                             "F" "Bb" "Eb" "Ab" "Db" "Gb" "Cb")]))
+
+(define upper-time-sig-selector (new choice%
+                                     [parent time-sig-panel]
+                                     [label "Time Signature (Upper) "]
+                                     [choices '("1" "2" "3" "4")]))
+
+(define lower-time-sig-selector (new choice%
+                                     [parent time-sig-panel]
+                                     [label "Time Signature (Lower) "]
+                                     [choices '("1" "2" "4")]))
+
+(define tempo-slider (new slider%
+                                  [parent staves-score-panel]
+                                  [label "Tempo (bpm) "]
+                                  [min-value 40]
+                                  [max-value 360]))
+
+(define staves-score-btns-panel1 (new horizontal-panel%
+                                      [parent staves-score-panel]
+                                      [alignment '(center top)]))
+
+(define change-time-sig-btn (new button%
+                             [parent staves-score-btns-panel1]
+                             [label "Change Time Signature"]
+                             [callback (lambda (button event)
+                                         "Change Time Signature")]))
+
+(define change-key-sig-btn (new button%
+                             [parent staves-score-btns-panel1]
+                             [label "Change Key Signature"]
+                             [callback (lambda (button event)
+                                         "Change Key Signature")]))
+
+(define staves-score-btns-panel2 (new horizontal-panel%
+                                      [parent staves-score-panel]
+                                      [alignment '(center top)]))
+
+(define change-tempo-btn (new button%
+                             [parent staves-score-btns-panel2]
+                             [label "Change Tempo"]
+                             [callback (lambda (button event)
+                                         "Change Tempo")]))
+
+(define remove-staff-btn (new button%
+                             [parent staves-score-btns-panel2]
+                             [label "Remove Staff"]
+                             [callback (lambda (button event)
+                                         "Remove Staff")]))
+
+(define add-staff-btn (new button%
+                             [parent staves-score-btns-panel2]
+                             [label "Add Staff"]
+                             [callback (lambda (button event)
+                                         "Add Staff")]))
                                 
                         
 ;; TRANSPOSITION PANEL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -200,4 +300,4 @@
                                              "Transpose Score")]))
 
 
-(send frame show #t)
+(send mother-frame show #t)
