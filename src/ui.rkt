@@ -1,7 +1,19 @@
 #lang racket/gui
 
 (require "core.rkt")
+(require "modify.rkt")
 (require racket/gui/base)
+
+;; HELPER FUNCTIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define (string-to-note-name str)
+  (cond [(eq? str "A") A]
+        [(eq? str "B") B]
+        [(eq? str "C") C]
+        [(eq? str "D") D]
+        [(eq? str "E") E]
+        [(eq? str "F") F]
+        [(eq? str "G") G]))
 
 ;; LOADING IMAGES ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -159,7 +171,21 @@
                              [parent note-buttons-panel]
                              [label "Change Note"]
                              [callback (lambda (button event)
-                                         "Change Note")]))
+                                         (let ([selection
+                                                (send accidental-selector get-selection)]
+                                               [note-name
+                                                (string-to-note-name
+                                                 (send note-name-selector
+                                                       get-string-selection))])
+                                           (let ([adjustment
+                                                  (if (= selection 2)
+                                                      -1
+                                                      selection)])
+                                             (change-note sc
+                                                          ei
+                                                          'name
+                                                          (+ note-name adjustment)))))]))
+                                                      
 
 (define delete-note-btn (new button%
                              [parent note-buttons-panel]

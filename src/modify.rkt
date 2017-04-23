@@ -226,6 +226,7 @@
 (define (calculate-duration time-sig note-length)
   (* note-length (get-lower time-sig)))
 
+(provide (all-defined-out))
 
 (define n (make-note (make-pitch C 4) 4))
 (define st (make-staff 'Treble (make-key-sig F) (list n n n n n)))
