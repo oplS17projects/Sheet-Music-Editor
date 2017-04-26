@@ -6,7 +6,7 @@
 "Running UNIT TESTS. Errors will be shown below (if any):"
 
 (define my-staff (make-staff 'treble (make-key-sig C)
-                             (make-note (make-pitch C 4) .5)
+                             (list (make-note (make-pitch C 4) .5)
                              (make-note (make-pitch C 4) .25)
                              (make-note (make-pitch C 4) .25)
                              (make-note (make-pitch C 4) 1)
@@ -16,13 +16,13 @@
                              (make-note (make-pitch C 4) .5)
                              (make-note (make-pitch C 4) 1)
                              (make-note (make-pitch C 4) .5)
-                             (make-note (make-pitch C 4) 1)))
+                             (make-note (make-pitch C 4) 1))))
 (define my-staff-treble (make-staff 'treble (make-key-sig C)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)))
+                                         (list (make-note (make-pitch C 4) 1)
+                                         (make-note (make-pitch D 4) 1))))
 (define my-staff-bass (make-staff 'bass (make-key-sig C)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)))
+                                         (list (make-note (make-pitch C 4) 1)
+                                         (make-note (make-pitch D 4) 1))))
 
 ; Time signatures
 (test-case
@@ -36,7 +36,7 @@
  "Create a basic score: 2/4 time, 60bpm, two notes"
  (let ([my-score (make-score (make-time-sig 2 4)
                              60
-                             my-staff-treble)])
+                             (list my-staff-treble))])
    (begin (check-equal? (get-num-beats (get-time-sig my-score)) 2)
           (check-equal? (get-beat-unit (get-time-sig my-score)) 4)
           (check-equal? (get-tempo my-score) 60)
@@ -47,8 +47,8 @@
  "Create a score consisting of multiple staves"
  (let ([my-score (make-score (make-time-sig 2 4)
                              60
-                             my-staff-treble
-                             my-staff-bass)])
+                             (list my-staff-treble
+                             my-staff-bass))])
    (begin (check-equal? (get-num-beats (get-time-sig my-score)) 2)
           (check-equal? (get-beat-unit (get-time-sig my-score)) 4)
           (check-equal? (get-tempo my-score) 60)
@@ -59,22 +59,22 @@
  "Accessing a staff recursively using get-staff"
  (let ([my-score (make-score (make-time-sig 2 4)
                              60
-                             my-staff-treble
-                             my-staff-bass)])
+                             (list my-staff-treble
+                             my-staff-bass))])
    (begin (check-equal? (get-staff my-score 0) (make-staff 'treble (make-key-sig C)
-                                                           (make-note (make-pitch C 4) 1)
-                                                           (make-note (make-pitch D 4) 1)))
+                                                           (list (make-note (make-pitch C 4) 1)
+                                                           (make-note (make-pitch D 4) 1))))
           (check-equal? (get-clef (get-staff my-score 1)) 'bass))))
 
 (test-case
  "Count of beats in a score"
  (let ([my-score (make-score (make-time-sig 2 4)
                              60
-                             my-staff-treble
-                             my-staff-bass)]
+                             (list my-staff-treble
+                             my-staff-bass))]
        [my-bigger-score (make-score (make-time-sig 2 4)
                                     60
-                                    my-staff)])
+                                    (list my-staff))])
    (begin (check-equal? (count-beats my-score) 2)
           (check-equal? (count-beats my-bigger-score) 14.0))))
 
