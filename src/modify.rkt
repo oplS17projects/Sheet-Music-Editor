@@ -239,8 +239,3 @@
   (* (/ (get-lower time-sig) 8) note-length))
 
 (provide (all-defined-out))
-
-(define n (make-note (make-pitch C 4) 4))
-(define st (make-staff 'Treble (make-key-sig F) (list n n n n n)))
-(define sc (make-score (make-time-sig 4 4) 100 (list st st)))
-(define ei (make-edit-info 0 0))

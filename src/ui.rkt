@@ -1,11 +1,15 @@
 #lang racket/gui
 
+(require racket/gui/base)
 (require "core.rkt")
 (require "modify.rkt")
 (require "draw.rkt")
-(require racket/gui/base)
 
 ;; MUTABLE ITEMS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define global-edit-info 'bar)
+(set! global-edit-info (make-edit-info 0 0))
+
 (define global-score 'foo)
 (set! global-score (make-score (make-time-sig 4 4)
                                120
@@ -13,8 +17,7 @@
                                                                                 (make-note (make-pitch R -1) 4)
                                                                                 (make-note (make-pitch R -1) 4)
                                                                                 (make-note (make-pitch R -1) 4))))))
-(define global-edit-info 'bar)
-(set! global-edit-info (make-edit-info 0 0))
+
 
 ;; HELPER FUNCTIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -34,6 +37,7 @@
         [(eq? str "F#") F#]
         [(eq? str "Gb") Gb]
         [(eq? str "G") G]))
+
 
 ;; LOADING IMAGES ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -129,6 +133,7 @@
         (draw global-score global-edit-info dc))]))
 (send music-canvas set-canvas-background (make-object color% 200 200 200))
 
+
 ;; EDIT-INFO PANEL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define edit-info-panel (new group-box-panel%
@@ -197,50 +202,62 @@
 
 (define insert-note-btn (new button%
                              [parent note-buttons-panel]
-                             [label "Insert Note"]
+                             [label "Append Note"]
                              [callback (lambda (button event)
-                                         (let ([selection
-                                                (send accidental-selector get-selection)]
-                                               [note-name
-                                                (string-to-note-name
-                                                 (send note-name-selector
-                                                       get-string-selection))]
-                                               [note-type
-                                                (send note-length-selector get-selection)])
-                                           (let ([adjustment
-                                                  (if (= selection 2)
-                                                      -1
-                                                      selection)]
-                                                 [note-length
-                                                  (expt 2 note-type)])
-                                             (add-note sc ei note-length
-                                                       (modulo
-                                                        (+ note-name adjustment) 12)))))]))
+                                         (begin
+                                           (set! global-score
+                                                 (let ([selection
+                                                        (send accidental-selector get-selection)]
+                                                       [note-name
+                                                        (string-to-note-name
+                                                         (send note-name-selector
+                                                               get-string-selection))]
+                                                       [note-type
+                                                        (send note-length-selector get-selection)])
+                                                   (let ([adjustment
+                                                          (if (= selection 2)
+                                                              -1
+                                                              selection)]
+                                                         [note-length
+                                                          (expt 2 note-type)])
+                                                     (add-note global-score
+                                                               global-edit-info
+                                                               note-length
+                                                               (modulo
+                                                                (+ note-name adjustment) 12)))))
+                                           (send music-canvas on-paint)))]))
 
 (define change-note-btn (new button%
                              [parent note-buttons-panel]
                              [label "Change Note"]
                              [callback (lambda (button event)
-                                         (let ([selection
-                                                (send accidental-selector get-selection)]
-                                               [note-name
-                                                (string-to-note-name
-                                                 (send note-name-selector
-                                                       get-string-selection))])
-                                           (let ([adjustment
-                                                  (if (= selection 2)
-                                                      -1
-                                                      selection)])
-                                             (change-note sc ei 'name
-                                                          (modulo
-                                                           (+ note-name adjustment) 12)))))]))
+                                         (begin
+                                           (set! global-score
+                                                 (let ([selection
+                                                        (send accidental-selector get-selection)]
+                                                       [note-name
+                                                        (string-to-note-name
+                                                         (send note-name-selector
+                                                               get-string-selection))])
+                                                   (let ([adjustment
+                                                          (if (= selection 2)
+                                                              -1
+                                                              selection)])
+                                                     (change-note global-score
+                                                                  global-edit-info
+                                                                  'name
+                                                                  (modulo
+                                                                   (+ note-name adjustment) 12)))))
+                                           (send music-canvas on-paint)))]))
                                                       
 
 (define delete-note-btn (new button%
                              [parent note-buttons-panel]
                              [label "Delete Note"]
                              [callback (lambda (button event)
-                                         (delete-note sc ei))]))
+                                         (set! global-score
+                                               (delete-note global-score
+                                                            global-edit-info)))]))
 
 
 ;; STAVES/SCORE PANEL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -303,22 +320,27 @@
                              [parent staves-score-btns-panel1]
                              [label "Change Time Signature"]
                              [callback (lambda (button event)
-                                         (let ([upper (string->number
-                                                       (send upper-time-sig-selector
-                                                             get-string-selection))]
-                                               [lower (string->number
-                                                       (send lower-time-sig-selector
-                                                             get-string-selection))])
-                                           (change-time-signature sc upper lower)))]))
+                                         (set! global-score
+                                               (let ([upper (string->number
+                                                             (send upper-time-sig-selector
+                                                                   get-string-selection))]
+                                                     [lower (string->number
+                                                             (send lower-time-sig-selector
+                                                                   get-string-selection))])
+                                                 (change-time-signature global-score
+                                                                        upper lower))))]))
 
 (define change-key-sig-btn (new button%
                              [parent staves-score-btns-panel1]
                              [label "Change Key Signature"]
                              [callback (lambda (button event)
-                                         (let ([note-name (string-to-note-name
-                                                           (send key-sig-selector
-                                                                 get-string-selection))])
-                                           (change-key-signature sc ei note-name)))]))
+                                         (set! global-score
+                                               (let ([note-name (string-to-note-name
+                                                                 (send key-sig-selector
+                                                                       get-string-selection))])
+                                                 (change-key-signature global-score
+                                                                       global-edit-info
+                                                                       note-name))))]))
 
 (define staves-score-btns-panel2 (new horizontal-panel%
                                       [parent staves-score-panel]
@@ -328,26 +350,31 @@
                              [parent staves-score-btns-panel2]
                              [label "Change Tempo"]
                              [callback (lambda (button event)
-                                         (change-tempo sc (send tempo-slider get-value)))]))
+                                         (set! global-score
+                                               (change-tempo global-score
+                                                             (send tempo-slider get-value))))]))
 
 (define remove-staff-btn (new button%
                              [parent staves-score-btns-panel2]
                              [label "Remove Staff"]
                              [callback (lambda (button event)
-                                         (remove-staff sc ei))]))
+                                         (set! global-score
+                                               (remove-staff global-score
+                                                             global-edit-info)))]))
 
 (define add-staff-btn (new button%
                              [parent staves-score-btns-panel2]
                              [label "Add Staff"]
                              [callback (lambda (button event)
-                                         (let ([note-name (string-to-note-name
-                                                           (send key-sig-selector
-                                                                 get-string-selection))]
-                                               [clef (if (= 0 (send clef-selector
-                                                                  get-selection))
-                                                         'Treble
-                                                         'Bass)])
-                                           (add-staff sc clef note-name)))]))
+                                         (set! global-score
+                                               (let ([note-name (string-to-note-name
+                                                                 (send key-sig-selector
+                                                                       get-string-selection))]
+                                                     [clef (if (= 0 (send clef-selector
+                                                                          get-selection))
+                                                               'Treble
+                                                               'Bass)])
+                                                 (add-staff global-score clef note-name))))]))
                                 
                         
 ;; TRANSPOSITION PANEL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -383,29 +410,34 @@
                                  [parent transposition-btn-panel]
                                  [label "Transpose Staff"]
                                  [callback (lambda (button event)
-                                             (let ([shift-amount
-                                                    (send transposition-slider get-value)]
-                                                   [direction
-                                                    (send transposition-up-down
-                                                          get-selection)])
-                                               (let ([shift
-                                                      (cond [(= direction 0) shift-amount]
-                                                            [else (* -1 shift-amount)])])
-                                                 (transpose-staff sc ei shift))))]))
+                                             (set! global-score
+                                                   (let ([shift-amount
+                                                          (send transposition-slider get-value)]
+                                                         [direction
+                                                          (send transposition-up-down
+                                                                get-selection)])
+                                                     (let ([shift
+                                                            (cond [(= direction 0) shift-amount]
+                                                                  [else (* -1 shift-amount)])])
+                                                       (transpose-staff global-score
+                                                                        global-edit-info
+                                                                        shift)))))]))
 
 (define transpose-score-btn (new button%
                                  [parent transposition-btn-panel]
                                  [label "Transpose Score"]
                                  [callback (lambda (button event)
-                                             (let ([shift-amount
-                                                    (send transposition-slider get-value)]
-                                                   [direction
-                                                    (send transposition-up-down
-                                                          get-selection)])
-                                               (let ([shift
-                                                      (cond [(= direction 0) shift-amount]
-                                                            [else (* -1 shift-amount)])])
-                                                 (transpose-score sc shift))))]))
+                                             (set! global-score
+                                                   (let ([shift-amount
+                                                          (send transposition-slider get-value)]
+                                                         [direction
+                                                          (send transposition-up-down
+                                                                get-selection)])
+                                                     (let ([shift
+                                                            (cond [(= direction 0) shift-amount]
+                                                                  [else (* -1 shift-amount)])])
+                                                       (transpose-score global-score
+                                                                        shift)))))]))
 
 
 ;; I/O ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
