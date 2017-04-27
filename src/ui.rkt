@@ -416,11 +416,13 @@
       (print score output-port))))
 
 (define (load filename)
-  (set! global-score (eval (read (open-input-string (call-with-input-file (string-append filename ".scr")
-  (lambda (input-port)
-    (let loop ((x (read-char input-port)) (mystr ""))
-      (if (not (eof-object? x))
-            (loop (read-char input-port)(string-append mystr (string x))) mystr )))))))))
+  (begin (set! global-score (eval (read (open-input-string (call-with-input-file (string-append filename ".scr")
+                                                      (lambda (input-port)
+                                                        (let loop ((x (read-char input-port)) (mystr ""))
+                                                          (if (not (eof-object? x))
+                                                              (loop (read-char input-port)(string-append mystr (string x))) mystr ))))))))
+         (send music-canvas refresh)
+         (set! global-edit-info (make-edit-info 0 0))))
 
 (send mother-frame show #t)
 
