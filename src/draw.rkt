@@ -396,6 +396,7 @@
     (draw-blank-staves score dc)
     ;; Draw notes onto the staves
     (draw-notes score edit-info dc)))
+  
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

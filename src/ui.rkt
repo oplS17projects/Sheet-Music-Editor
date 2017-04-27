@@ -410,10 +410,10 @@
 
 ;; I/O ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define (save score filename)
+(define (save filename)
   (call-with-output-file (string-append filename ".scr") ;; "SCoRe file extension
     (lambda (output-port)
-      (print score output-port))))
+      (print global-score output-port))))
 
 (define (load filename)
   (begin (set! global-score (eval (read (open-input-string (call-with-input-file (string-append filename ".scr")
@@ -423,6 +423,21 @@
                                                               (loop (read-char input-port)(string-append mystr (string x))) mystr ))))))))
          (send music-canvas refresh)
          (set! global-edit-info (make-edit-info 0 0))))
+
+(define (export filename)
+  (define export-file
+    (new pdf-dc%
+         [ interactive #f ]
+         [ use-paper-bbox #f ]
+         [ as-eps #f ]
+         [ width (- page-width-px 100) ]
+         [ height (decide-height global-score) ]
+         [ output (string-append filename ".pdf") ]))
+  (send export-file start-doc filename)
+  (send export-file start-page)
+  (draw global-score (make-edit-info -1 -1) export-file)
+  (send export-file end-page)
+  (send export-file end-doc))
 
 (send mother-frame show #t)
 
