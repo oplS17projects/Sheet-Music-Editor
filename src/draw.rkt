@@ -334,7 +334,7 @@
             'png/alpha #f #f
             (/ acc-img-scale stave-height-px))
           (- x 10)
-          (+ y (* (find-note-position clef key pitch) (/ stave-height-px 8)) note-offset-px))))
+          (+ y (* (find-note-position clef key pitch) (/ stave-height-px 8)) note-offset-px 10))))
   
   (define (draw-obj clef key obj x y beat)
     (begin (if (rest? obj)
