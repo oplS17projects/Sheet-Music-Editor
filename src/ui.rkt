@@ -5,8 +5,7 @@
 (require "draw.rkt")
 (require racket/gui/base)
 
-;; HELPER FUNCTIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;; MUTABLE ITEMS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define global-score 'foo)
 (set! global-score (make-score (make-time-sig 4 4)
                                120
@@ -14,6 +13,10 @@
                                                                                 (make-note (make-pitch R -1) 4)
                                                                                 (make-note (make-pitch R -1) 4)
                                                                                 (make-note (make-pitch R -1) 4))))))
+(define global-edit-info 'bar)
+(set! global-edit-info (make-edit-info 0 0))
+
+;; HELPER FUNCTIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (string-to-note-name str)
   (cond [(eq? str "Ab") Ab]
@@ -123,7 +126,7 @@
      [style '(vscroll)]
      [paint-callback
       (lambda (canvas dc)
-        (draw global-score dc))]))
+        (draw global-score global-edit-info dc))]))
 (send music-canvas set-canvas-background (make-object color% 200 200 200))
 
 ;; EDIT-INFO PANEL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

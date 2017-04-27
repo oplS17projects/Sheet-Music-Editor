@@ -102,8 +102,18 @@
   (cons staff index))
 (define get-current-staff car)
 (define get-current-index cdr)
+(define (dec-current-index obj) (if (> (get-current-index obj) 0)
+                                    (make-edit-info (get-current-staff obj)
+                                                (- (get-current-index obj) 1))
+                                    obj))
 (define (inc-current-index obj) (make-edit-info (get-current-staff obj)
                                                 (+ (get-current-index obj) 1)))
+(define (dec-current-staff obj) (if (> (get-current-staff obj) 0)
+                                    (make-edit-info ( - (get-current-staff obj) 1)
+                                                (get-current-index obj))
+                                    obj))
+(define (inc-current-staff obj) (make-edit-info (+ (get-current-staff obj) 1)
+                                                (get-current-index obj)))
 
 ; Lets us unit test
 (provide (all-defined-out))

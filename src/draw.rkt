@@ -291,10 +291,10 @@
 ;; Drawing the notes ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; *** RECURSION
 
-(define (draw-notes score dc)
+(define (draw-notes score edit-info dc)
   ;; Handle drawing objects
   ;; An object is a note or a rest
-  (define (draw-rest duration x y)
+  (define (draw-rest duration x y flag)
       (send dc draw-bitmap
             (make-object bitmap%
               (let ([lower (get-lower (get-time-sig score))])
@@ -302,7 +302,7 @@
                     [(= duration (* 0.250 lower)) "../img/small/quarter_rest.png"]
                     [(= duration (* 0.500 lower)) "../img/small/half_rest.png"]
                     [(= duration (* 1.000 lower)) "../img/small/whole_rest.png"]))
-            'png/alpha #f #f
+            (if flag 'png 'png/alpha) (make-object color% 250 180 220) #f
             (/ note-img-scale stave-height-px))
       (+ x (car (rest-offset-px (/ (* 4 duration) (get-lower (get-time-sig score)))
                                 (/ (- page-width-px l-margin-px r-margin-px)
@@ -310,7 +310,7 @@
       (+ y (cdr (rest-offset-px (/ (* 4 duration) (get-lower (get-time-sig score)))
                                 0)))))
   
-  (define (draw-note clef key pitch duration x y)
+  (define (draw-note clef key pitch duration x y flag)
     (begin
       ;; Note
       (send dc draw-bitmap
@@ -320,7 +320,7 @@
                     [(= duration (* 0.250 lower)) "../img/small/quarter.png"]
                     [(= duration (* 0.500 lower)) "../img/small/half.png"]
                     [(= duration (* 1.000 lower)) "../img/small/whole.png"]))
-            'png/alpha #f #f
+            (if flag 'png 'png/alpha) (make-object color% 250 180 220) #f
             (/ note-img-scale stave-height-px))
           x
           (+ y (* (find-note-position clef key pitch) (/ stave-height-px 8)) note-offset-px))
@@ -328,18 +328,18 @@
       (send dc draw-bitmap
           (make-object bitmap%
             (let ([acc (decide-acc key pitch)])
-              (cond [(= acc 0) "fakepath"] ;; no path => no image
+              (cond [(= acc 0) "none"] ;; no path => no image
                     [(= acc 1) "../img/small/sharp.png"]
                     [(= acc 2) "../img/small/natural.png"]))
-            'png/alpha #f #f
+            (if flag 'png 'png/alpha) (make-object color% 250 180 220) #f
             (/ acc-img-scale stave-height-px))
           (- x 10)
           (+ y (* (find-note-position clef key pitch) (/ stave-height-px 8)) note-offset-px 10))))
   
-  (define (draw-obj clef key obj x y beat)
+  (define (draw-obj clef key obj x y beat flag)
     (begin (if (rest? obj)
-               (draw-rest (get-duration obj) x y)
-               (draw-note clef key (get-pitch obj) (get-duration obj) x y))
+               (draw-rest (get-duration obj) x y flag)
+               (draw-note clef key (get-pitch obj) (get-duration obj) x y flag))
            (cons
             (if (> (+ beat (get-duration obj)) beats-per-line)
                 (- 0 (* beat-size-px (- beat 1)))
@@ -357,32 +357,33 @@
         (+ beat delta)))
 
   ;; Draws all musical objects in the list 'objs'
-  (define (draw-notes-on-stave stave y)
-    (define (iter objs x y beat)
+  (define (draw-notes-on-stave stave y sflag)
+    (define (iter objs x y beat n)
       (if (null? objs)
         'done
-        (let* ([deltas (draw-obj (get-clef stave) (get-key-sig stave) (car objs) x y beat)]
+        (let* ([flag (and sflag (= n (get-current-index edit-info)))]
+               [deltas (draw-obj (get-clef stave) (get-key-sig stave) (car objs) x y beat flag)]
                [dx (car deltas)]
                [dy (cdr deltas)])
           (iter (cdr objs) (+ x dx) (+ y dy)
-                (update-beat beat (get-duration (car objs)))))))
-    (iter (get-notes stave) (+ l-margin-px signature-width (/ beat-size-px 16)) y 1))
+                (update-beat beat (get-duration (car objs))) (+ n 1)))))
+    (iter (get-notes stave) (+ l-margin-px signature-width (/ beat-size-px 16)) y 1 0))
   
   ;; Draw all notes
   (define (draw-all-notes score)
-    (define (iter staves y)
+    (define (iter staves y n)
       (if (null? staves)
           'done
-          (begin (draw-notes-on-stave (car staves) y)
-                 (iter (cdr staves) (+ y stave-height-px stave-gap-px)))))
-    (iter (get-staves score) top-margin-px))
+          (begin (draw-notes-on-stave (car staves) y (= n (get-current-staff edit-info)))
+                 (iter (cdr staves) (+ y stave-height-px stave-gap-px) (+ n 1)))))
+    (iter (get-staves score) top-margin-px 0))
   
   ;; Driver
   (draw-all-notes score))
 
 ;; Main driver ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define (draw score dc)
+(define (draw score edit-info dc)
   ;; Local definitions
   (define page-height-px (decide-height score))
   ;; Each of the following procedures are modular
@@ -394,7 +395,7 @@
     ;; Draw all the empty staves
     (draw-blank-staves score dc)
     ;; Draw notes onto the staves
-    (draw-notes score dc)))
+    (draw-notes score edit-info dc)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
