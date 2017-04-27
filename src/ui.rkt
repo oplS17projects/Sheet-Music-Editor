@@ -2,6 +2,7 @@
 
 (require "core.rkt")
 (require "modify.rkt")
+(require "draw.rkt")
 (require racket/gui/base)
 
 ;; HELPER FUNCTIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -93,15 +94,29 @@
 
 (define mother-frame (new frame%
                           [label "Racket Sheet Music Editor - Toolbar"]
-                          [width 400]
+                          [width 1000]
                           [height 800]
                           [alignment '(left top)]))
 
-(define frame (new vertical-panel%
+(define daughter-frame (new horizontal-panel%
                    [parent mother-frame]
                    [alignment '(left top)]
                    [style '(auto-vscroll)]))
 
+(define frame (new vertical-panel%
+                   [parent daughter-frame]
+                   [alignment '(left top)]
+                   [style '(auto-vscroll)]))
+
+(define music-canvas (new canvas% [parent daughter-frame]
+     [min-width 800]
+     [vert-margin 10]
+     [horiz-margin 10]
+     [style '(vscroll)]
+     [paint-callback
+      (lambda (canvas dc)
+        (draw global-score dc))]))
+(send music-canvas set-canvas-background (make-object color% 200 200 200))
 
 ;; EDIT-INFO PANEL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -383,3 +398,5 @@
 
 
 (send mother-frame show #t)
+
+(provide (all-defined-out))

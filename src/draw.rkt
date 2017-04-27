@@ -13,7 +13,7 @@
 (define ns (namespace-anchor->namespace anc))
 
 ;; Document size properties
-(define page-width-px 850)
+(define page-width-px 750)
 (define top-margin-px 100)
 (define stave-height-px 40)
 (define stave-gap-px 30)
@@ -388,11 +388,11 @@
 
 ;; Main driver ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define (draw score)
+(define (draw score dc)
   ;; Local definitions
   (define page-height-px (decide-height score))
   (define drawing (make-bitmap (inexact->exact page-width-px) (inexact->exact page-height-px)))
-  (define dc (new bitmap-dc% [bitmap drawing]))
+  ;(define dc (new bitmap-dc% [bitmap drawing]))
   ;; Each of the following procedures are modular
   ;;   except render, so they can be called in any
   ;;   order and will not damage each other
@@ -408,10 +408,13 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(provide (all-defined-out))
+
 ;; Experimental Code ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Create & draw an arbitrary score for verification
-(define my-staff-treble (make-staff 'treble (make-key-sig F)
+(define my-staff-treble (make-staff 'treble (make-key-sig C)
+                                    (list
                                          (make-note (make-pitch B 4) 1)
                                          (make-note (make-pitch B# 5) 1)
                                          (make-note (make-pitch Bb 4) 1)
@@ -470,9 +473,10 @@
                                          (make-note (make-pitch A 4) 1)
                                          (make-note (make-pitch B 4) 1)
                                          (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)))
+                                         (make-note (make-pitch D 4) 1))))
 
 (define my-staff-bass (make-staff 'bass (make-key-sig C)
+                                  (list
                                   (make-note (make-pitch A 2) 2)
                                   (make-note (make-pitch B 2) 2)
                                   ;;
@@ -507,10 +511,10 @@
                                   (make-note (make-pitch B 2) 2)
                                   ;;
                                   (make-note (make-pitch C 3) 2)
-                                  (make-note (make-pitch D 3) 2)))
+                                  (make-note (make-pitch D 3) 2))))
 
 (define my-score (make-score (make-time-sig 4 4)
                              60
-                             my-staff-treble
-                             my-staff-bass))
-(draw my-score)
+                             (list my-staff-treble
+                             my-staff-bass)))
+;(draw my-score)
