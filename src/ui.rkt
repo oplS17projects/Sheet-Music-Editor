@@ -7,6 +7,14 @@
 
 ;; HELPER FUNCTIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(define global-score 'foo)
+(set! global-score (make-score (make-time-sig 4 4)
+                               120
+                               (list (make-staff 'treble (make-key-sig C) (list (make-note (make-pitch R -1) 4)
+                                                                                (make-note (make-pitch R -1) 4)
+                                                                                (make-note (make-pitch R -1) 4)
+                                                                                (make-note (make-pitch R -1) 4))))))
+
 (define (string-to-note-name str)
   (cond [(eq? str "Ab") Ab]
         [(eq? str "A") A]

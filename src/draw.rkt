@@ -31,8 +31,8 @@
 ;; How much space to leave for key signature
 (define clef-padding-px 5)
 (define key-sig-padding-px 60)
-(define time-sig-padding-px 50)
-(define signature-width 75)
+(define time-sig-padding-px 100)
+(define signature-width 150)
 (define beat-size-px (/ (- page-width-px l-margin-px r-margin-px signature-width) beats-per-line))
 
 ;; Fonts
@@ -380,19 +380,11 @@
   ;; Driver
   (draw-all-notes score))
 
-;; Render the final document ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Render the document
-(define (render target)
-  (make-object image-snip% target))
-
 ;; Main driver ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (draw score dc)
   ;; Local definitions
   (define page-height-px (decide-height score))
-  (define drawing (make-bitmap (inexact->exact page-width-px) (inexact->exact page-height-px)))
-  ;(define dc (new bitmap-dc% [bitmap drawing]))
   ;; Each of the following procedures are modular
   ;;   except render, so they can be called in any
   ;;   order and will not damage each other
@@ -402,119 +394,8 @@
     ;; Draw all the empty staves
     (draw-blank-staves score dc)
     ;; Draw notes onto the staves
-    (draw-notes score dc)
-    ;; Render the document
-    (render drawing)))
+    (draw-notes score dc)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (provide (all-defined-out))
-
-;; Experimental Code ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Create & draw an arbitrary score for verification
-(define my-staff-treble (make-staff 'treble (make-key-sig C)
-                                    (list
-                                         (make-note (make-pitch B 4) 1)
-                                         (make-note (make-pitch B# 5) 1)
-                                         (make-note (make-pitch Bb 4) 1)
-                                         (make-note (make-pitch R 4) 1)
-                                         ;;
-                                         (make-note (make-pitch A 4) 1)
-                                         (make-note (make-pitch Bb 4) 1)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)
-                                         ;;
-                                         (make-note (make-pitch A 4) 1)
-                                         (make-note (make-pitch B 4) 1)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)
-                                         ;;
-                                         (make-note (make-pitch A 4) 1)
-                                         (make-note (make-pitch B 4) 1)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)
-                                         ;;
-                                         (make-note (make-pitch A 4) 1)
-                                         (make-note (make-pitch B 4) 1)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)
-                                         ;;
-                                         (make-note (make-pitch A 4) 1)
-                                         (make-note (make-pitch B 4) 1)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)
-                                         ;;
-                                         (make-note (make-pitch A 4) 1)
-                                         (make-note (make-pitch B 4) 1)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)
-                                         ;;
-                                         (make-note (make-pitch A 4) 1)
-                                         (make-note (make-pitch B 4) 1)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)
-                                         ;;
-                                         (make-note (make-pitch A 4) 1)
-                                         (make-note (make-pitch B 4) 1)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)
-                                         ;;
-                                         (make-note (make-pitch A 4) 1)
-                                         (make-note (make-pitch B 4) 1)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)
-                                         ;;
-                                         (make-note (make-pitch A 4) 1)
-                                         (make-note (make-pitch B 4) 1)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1)
-                                         ;;
-                                         (make-note (make-pitch A 4) 1)
-                                         (make-note (make-pitch B 4) 1)
-                                         (make-note (make-pitch C 4) 1)
-                                         (make-note (make-pitch D 4) 1))))
-
-(define my-staff-bass (make-staff 'bass (make-key-sig C)
-                                  (list
-                                  (make-note (make-pitch A 2) 2)
-                                  (make-note (make-pitch B 2) 2)
-                                  ;;
-                                  (make-note (make-pitch C 3) 2)
-                                  (make-note (make-pitch D 3) 2)
-                                  ;;
-                                  (make-note (make-pitch A 2) 2)
-                                  (make-note (make-pitch B 2) 2)
-                                  ;;
-                                  (make-note (make-pitch C 3) 2)
-                                  (make-note (make-pitch D 3) 2)
-                                  ;;
-                                  (make-note (make-pitch A 2) 2)
-                                  (make-note (make-pitch B 2) 2)
-                                  ;;
-                                  (make-note (make-pitch C 3) 2)
-                                  (make-note (make-pitch D 3) 2)
-                                  ;;
-                                  (make-note (make-pitch A 2) 2)
-                                  (make-note (make-pitch B 2) 2)
-                                  ;;
-                                  (make-note (make-pitch C 3) 2)
-                                  (make-note (make-pitch D 3) 2)
-                                  ;;
-                                  (make-note (make-pitch A 2) 2)
-                                  (make-note (make-pitch B 2) 2)
-                                  ;;
-                                  (make-note (make-pitch C 3) 2)
-                                  (make-note (make-pitch D 3) 2)
-                                  ;;
-                                  (make-note (make-pitch A 2) 2)
-                                  (make-note (make-pitch B 2) 2)
-                                  ;;
-                                  (make-note (make-pitch C 3) 2)
-                                  (make-note (make-pitch D 3) 2))))
-
-(define my-score (make-score (make-time-sig 4 4)
-                             60
-                             (list my-staff-treble
-                             my-staff-bass)))
-;(draw my-score)
