@@ -408,6 +408,20 @@
                                                  (transpose-score sc shift))))]))
 
 
+;; I/O ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define (save score filename)
+  (call-with-output-file (string-append filename ".scr") ;; "SCoRe file extension
+    (lambda (output-port)
+      (print score output-port))))
+
+(define (load filename)
+  (set! global-score (eval (read (open-input-string (call-with-input-file (string-append filename ".scr")
+  (lambda (input-port)
+    (let loop ((x (read-char input-port)) (mystr ""))
+      (if (not (eof-object? x))
+            (loop (read-char input-port)(string-append mystr (string x))) mystr )))))))))
+
 (send mother-frame show #t)
 
 (provide (all-defined-out))
