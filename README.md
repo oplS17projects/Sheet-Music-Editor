@@ -28,6 +28,8 @@ The next major chunk is **Draw**. This takes the internal code-based representat
 
 The **Modifying Functions**, of course, allow the user to modify the sheet music. Through a series of buttons (`racket/gui`), the user triggers modifiers that change the internal representation of the sheet music. Changes to the Core trigger the Draw procedure to update what's visible to the user.
 
+![panel](/img/sample_panel.png)
+
 Another key component is **Play**. This is similar to Draw in that it receives data from Core and translates it to another representation. But instead of drawing it to the screen, Play generates audio that the user can listen to. Play uses `rsound`.
 
 The final major part is **Export**, which takes the data stored in Core and does yet another transformation. Export translates the data into a PDF.  The representation is very similar to Draw, but it does provide the title at the top of the document.
