@@ -4,7 +4,7 @@
 (require "core.rkt")
 (require "modify.rkt")
 
-; UTILITY FUNCTIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; UTILITY FUNCTIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define frames-per-second 25000)
 
@@ -21,7 +21,7 @@
   (midi-to-freq (pitch-to-midi pitch)))
 
 
-; PLAY FUNCTIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; PLAY FUNCTIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (play-staff score staff-index)
   (let ([notes (get-notes (get-staff score staff-index))])
@@ -32,7 +32,7 @@
                                   10
                                   (calculate-frames (get-duration (car notes))
                                                    (get-tempo score))))
-                 (sleep (floor (* 60 (/ (get-duration (car notes)) (get-tempo score)))))
+                 (sleep (* 60 (/ (get-duration (car notes)) (get-tempo score))))
                  (play-iter (cdr notes)))))
     (play-iter notes)))
 

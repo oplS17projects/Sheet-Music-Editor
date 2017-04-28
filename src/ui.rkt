@@ -14,7 +14,7 @@
 (define global-score 'foo)
 (set! global-score (make-score (make-time-sig 4 4)
                                120
-                               (list (make-staff 'treble (make-key-sig C) (list (make-note (make-pitch R -1) 1))))))
+                               (list (make-staff 'treble (make-key-sig C) (list (make-note (make-pitch R -1) 0.5))))))
 
 
 ;; HELPER FUNCTIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -131,6 +131,7 @@
         (draw global-score global-edit-info dc))]))
 (send music-canvas set-canvas-background (make-object color% 200 200 200))
 
+
 ;; I/O PANEL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define io-panel (new group-box-panel%
@@ -140,33 +141,60 @@
                              [vert-margin 10]
                              [border 10]
                              [alignment '(center top)]))
+
 (define filename-field (new text-field%
                         [parent io-panel]
                         [label "Song Title"]
                         [init-value "Untitled Score"]))
+
+(define io-horiz-panel (new horizontal-panel%
+                            [parent io-panel]
+                            [horiz-margin 25]))
+
 (define save-btn (new button%
-                        [parent io-panel]
+                        [parent io-horiz-panel]
                         [label "Save"]
                         [callback (lambda (button event)
                                     (save (send filename-field get-value)))]))
+
 (define load-btn (new button%
-                        [parent io-panel]
+                        [parent io-horiz-panel]
                         [label "Load"]
                         [callback (lambda (button event)
                                     (load (send filename-field get-value)))]))
+
 (define clear-btn (new button%
-                        [parent io-panel]
+                        [parent io-horiz-panel]
                         [label "Reset"]
                         [callback (lambda (button event)
                                     (begin(set! global-score (make-score (make-time-sig 4 4)
                                120
                                (list (make-staff 'treble (make-key-sig C) (list (make-note (make-pitch R -1) 1))))))
                                           (send music-canvas refresh)))]))
+
 (define export-btn (new button%
-                        [parent io-panel]
+                        [parent io-horiz-panel]
                         [label "Export to PDF"]
                         [callback (lambda (button event)
                                     (export (send filename-field get-value)))]))
+
+
+;; PLAY PANEL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define play-panel (new group-box-panel%
+                        [parent frame]
+                        [label "Play"]
+                        [horiz-margin 10]
+                        [vert-margin 10]
+                        [border 10]
+                        [alignment '(center top)]))
+
+(define play-staff-btn (new button%
+                            [parent play-panel]
+                            [label "Play Staff"]
+                            [callback (lambda (button event)
+                                        (play-staff global-score
+                                                    (get-current-staff global-edit-info)))]))
 
 
 ;; EDIT-INFO PANEL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
