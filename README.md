@@ -32,6 +32,8 @@ Another key component is **Play**. This is similar to Draw in that it receives d
 
 The final major part is **Export**, which takes the data stored in Core and does yet another transformation. Export translates the data into a PDF.  The representation is very similar to Draw, but it does provide the title at the top of the document.
 
+![export](/img/smaple_output.png)
+
 All of these modules work with the data stored in Core, and create different representations so that the user can interact with the data. This modular system is beneficial, in that it allows for flexibility. Modularity in developing applications is important, as it allows the developers to add or remove modules as necessary.
 
 ## Schedule and Group Responsibilities
