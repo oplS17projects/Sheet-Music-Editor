@@ -107,7 +107,7 @@
 
 (define mother-frame (new frame%
                           [label "Racket Sheet Music Editor - Toolbar"]
-                          [width 1000]
+                          [width 2000]
                           [height 800]
                           [alignment '(left top)]))
 
@@ -122,7 +122,7 @@
                    [style '(auto-vscroll)]))
 
 (define music-canvas (new canvas% [parent daughter-frame]
-     [min-width 800]
+     [min-width 1800]
      [vert-margin 10]
      [horiz-margin 10]
      [style '(vscroll)]
@@ -167,10 +167,18 @@
                         [parent io-horiz-panel]
                         [label "Reset"]
                         [callback (lambda (button event)
-                                    (begin(set! global-score (make-score (make-time-sig 4 4)
-                               120
-                               (list (make-staff 'treble (make-key-sig C) (list (make-note (make-pitch R -1) 1))))))
-                                          (send music-canvas refresh)))]))
+                                    (begin
+                                      (set! global-score
+                                            (make-score (make-time-sig 4 4)
+                                                        120
+                                                        (list (make-staff
+                                                               'treble
+                                                               (make-key-sig C)
+                                                               (list (make-note
+                                                                      (make-pitch R -1) 1))))))
+                                      (set! global-edit-info
+                                            (make-edit-info 0 0))
+                                      (send music-canvas refresh)))]))
 
 (define export-btn (new button%
                         [parent io-horiz-panel]
@@ -234,7 +242,7 @@
                         [callback (lambda (button event)
                                     (begin
                                       (set! global-edit-info
-                                            (move-to-next-note global-score global-edit-info))
+                                            (move-to-previous-note global-score global-edit-info))
                                       (send music-canvas refresh)))]))
 
 (define nav-right-btn (new button%
@@ -243,7 +251,16 @@
                         [callback (lambda (button event)
                                     (begin
                                       (set! global-edit-info
-                                            (move-to-previous-note global-score global-edit-info))
+                                            (if (< (get-current-index global-edit-info)
+                                                   (- (length (get-notes
+                                                               (get-staff
+                                                                global-score
+                                                                (get-current-staff
+                                                                 global-edit-info))))
+                                                      1))
+                                                (move-to-next-note global-score
+                                                                       global-edit-info)
+                                                global-edit-info))
                                       (send music-canvas refresh)))]))
 
 (define nav-down-btn (new button%
@@ -559,6 +576,26 @@
                                                          (transpose-score global-score
                                                                           shift))))
                                                (send music-canvas refresh)))]))
+
+(define transpose-note-btn (new button%
+                                [parent transposition-btn-panel]
+                                [label "Transpose Note"]
+                                [callback (lambda (button event)
+                                            (begin
+                                              (set! global-score
+                                                    (let ([shift-amount
+                                                            (send transposition-slider get-value)]
+                                                           [direction
+                                                            (send transposition-up-down
+                                                                  get-selection)])
+                                                      (let ([shift
+                                                              (cond [(= direction 0) shift-amount]
+                                                                    [else (* -1 shift-amount)])])
+                                                        (change-note global-score
+                                                                     global-edit-info
+                                                                     'shift
+                                                                     shift))))
+                                              (send music-canvas refresh)))]))
 
 
 ;; I/O ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

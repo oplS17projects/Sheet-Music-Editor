@@ -19,9 +19,9 @@
                       (+ (get-current-index edit-info) change))))
 ;; Some short-hand procedures
 (define (move-to-next-note score edit-info)
-  (change-current-note-index score edit-info -1))
-(define (move-to-previous-note score edit-info)
   (change-current-note-index score edit-info 1))
+(define (move-to-previous-note score edit-info)
+  (change-current-note-index score edit-info -1))
 
 ;; Change current staff
 (define (change-current-staff edit-info staff-index)

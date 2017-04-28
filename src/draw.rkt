@@ -13,7 +13,7 @@
 (define ns (namespace-anchor->namespace anc))
 
 ;; Document size properties
-(define page-width-px 750)
+(define page-width-px 1700)
 (define top-margin-px 100)
 (define stave-height-px 40)
 (define stave-gap-px 30)
