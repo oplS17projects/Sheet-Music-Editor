@@ -484,6 +484,7 @@
   (send export-file start-doc path)
   (send export-file start-page)
   (draw global-score (make-edit-info -1 -1) export-file)
+  (send export-file draw-text path (/ page-width-px 2) (/ top-margin-px 2))
   (send export-file end-page)
   (send export-file end-doc))
 
