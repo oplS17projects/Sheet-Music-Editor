@@ -4,6 +4,7 @@
 (require "core.rkt")
 (require "modify.rkt")
 (require "draw.rkt")
+(require "play.rkt")
 
 ;; MUTABLE ITEMS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
