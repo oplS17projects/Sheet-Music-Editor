@@ -133,6 +133,35 @@
         (draw global-score global-edit-info dc))]))
 (send music-canvas set-canvas-background (make-object color% 200 200 200))
 
+;; I/O PANEL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define io-panel (new group-box-panel%
+                             [parent frame]
+                             [label "File"]
+                             [horiz-margin 10]
+                             [vert-margin 10]
+                             [border 10]
+                             [alignment '(center top)]))
+(define filename-field (new text-field%
+                        [parent io-panel]
+                        [label "Song Title"]
+                        [init-value "Untitled Score"]))
+(define save-btn (new button%
+                        [parent io-panel]
+                        [label "Save"]
+                        [callback (lambda (button event)
+                                    (save (send filename-field get-value)))]))
+(define load-btn (new button%
+                        [parent io-panel]
+                        [label "Load"]
+                        [callback (lambda (button event)
+                                    (load (send filename-field get-value)))]))
+(define export-btn (new button%
+                        [parent io-panel]
+                        [label "Export to PDF"]
+                        [callback (lambda (button event)
+                                    (export (send filename-field get-value)))]))
+
 
 ;; EDIT-INFO PANEL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
