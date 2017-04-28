@@ -13,10 +13,7 @@
 (define global-score 'foo)
 (set! global-score (make-score (make-time-sig 4 4)
                                120
-                               (list (make-staff 'treble (make-key-sig C) (list (make-note (make-pitch R -1) 4)
-                                                                                (make-note (make-pitch R -1) 4)
-                                                                                (make-note (make-pitch R -1) 4)
-                                                                                (make-note (make-pitch R -1) 4))))))
+                               (list (make-staff 'treble (make-key-sig C) (list (make-note (make-pitch R -1) 1))))))
 
 
 ;; HELPER FUNCTIONS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -156,6 +153,14 @@
                         [label "Load"]
                         [callback (lambda (button event)
                                     (load (send filename-field get-value)))]))
+(define clear-btn (new button%
+                        [parent io-panel]
+                        [label "Reset"]
+                        [callback (lambda (button event)
+                                    (begin(set! global-score (make-score (make-time-sig 4 4)
+                               120
+                               (list (make-staff 'treble (make-key-sig C) (list (make-note (make-pitch R -1) 1))))))
+                                          (send music-canvas refresh)))]))
 (define export-btn (new button%
                         [parent io-panel]
                         [label "Export to PDF"]
