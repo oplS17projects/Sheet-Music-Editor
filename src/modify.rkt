@@ -67,6 +67,34 @@
                                      n))
                                notes))))
 
+;; Inserts a note after a given index
+(define (insert-note score edit-info note)
+  (modify-notes score
+                (get-current-staff score)
+                (lambda (notes)
+                  (append (take notes (+ 1 (get-current-index edit-info)))
+                          (cons note (drop notes (+ 1 (get-current-index edit-info))))))))
+
+;; Splits single note in staff to two notes based on length
+(define (split-note score edit-info note-name length)
+  (let ([old-length
+         (get-duration (list-ref (get-notes (get-staff score
+                                                       (get-current-staff
+                                                        edit-info)))
+                                 (get-current-index edit-info)))])
+    (insert-note (modify-note score
+                              edit-info
+                              (lambda (n)
+                                (make-note
+                                 (make-pitch note-name
+                                             (get-nearest-octave n note-name))
+                                 length)))
+                 (get-current-index edit-info)
+                 (make-note
+                  (make-pitch R 0)
+                  (- old-length length)))))
+                  
+
 ;; ***ABSTRACTION***
 ;; Adds note to end of staff
 (define (add-note score edit-info note-length note-name)
@@ -105,7 +133,7 @@
                                        (get-nearest-octave
                                         n
                                         note-name))
-                           (get-duration n)))))]))
+                           (get-duration n)))))]))           
 
 ;; ***ABSTRACTION***
 ;; Deletes note (ie turns it into a rest)

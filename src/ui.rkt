@@ -225,7 +225,7 @@
                                                                note-length
                                                                (modulo
                                                                 (+ note-name adjustment) 12)))))
-                                           (send music-canvas on-paint)))]))
+                                           (send music-canvas refresh)))]))
 
 (define change-note-btn (new button%
                              [parent note-buttons-panel]
@@ -248,16 +248,18 @@
                                                                   'name
                                                                   (modulo
                                                                    (+ note-name adjustment) 12)))))
-                                           (send music-canvas on-paint)))]))
+                                           (send music-canvas refresh)))]))
                                                       
 
 (define delete-note-btn (new button%
                              [parent note-buttons-panel]
                              [label "Delete Note"]
                              [callback (lambda (button event)
-                                         (set! global-score
-                                               (delete-note global-score
-                                                            global-edit-info)))]))
+                                         (begin
+                                           (set! global-score
+                                                 (delete-note global-score
+                                                              global-edit-info))
+                                           (send music-canvas refresh)))]))
 
 
 ;; STAVES/SCORE PANEL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -299,7 +301,7 @@
 (define upper-time-sig-selector (new choice%
                                      [parent time-sig-panel]
                                      [label "Time Signature (Upper) "]
-                                     [choices '("1" "2" "3" "4")]))
+                                     [choices '("1" "2" "4")]))
 
 (define lower-time-sig-selector (new choice%
                                      [parent time-sig-panel]
@@ -320,27 +322,31 @@
                              [parent staves-score-btns-panel1]
                              [label "Change Time Signature"]
                              [callback (lambda (button event)
-                                         (set! global-score
-                                               (let ([upper (string->number
-                                                             (send upper-time-sig-selector
-                                                                   get-string-selection))]
-                                                     [lower (string->number
-                                                             (send lower-time-sig-selector
-                                                                   get-string-selection))])
-                                                 (change-time-signature global-score
-                                                                        upper lower))))]))
+                                         (begin
+                                           (set! global-score
+                                                 (let ([upper (string->number
+                                                               (send upper-time-sig-selector
+                                                                     get-string-selection))]
+                                                       [lower (string->number
+                                                               (send lower-time-sig-selector
+                                                                     get-string-selection))])
+                                                   (change-time-signature global-score
+                                                                          upper lower)))
+                                           (send music-canvas refresh)))]))
 
 (define change-key-sig-btn (new button%
                              [parent staves-score-btns-panel1]
                              [label "Change Key Signature"]
                              [callback (lambda (button event)
-                                         (set! global-score
-                                               (let ([note-name (string-to-note-name
-                                                                 (send key-sig-selector
-                                                                       get-string-selection))])
-                                                 (change-key-signature global-score
-                                                                       global-edit-info
-                                                                       note-name))))]))
+                                         (begin
+                                           (set! global-score
+                                                 (let ([note-name (string-to-note-name
+                                                                   (send key-sig-selector
+                                                                         get-string-selection))])
+                                                   (change-key-signature global-score
+                                                                         global-edit-info
+                                                                         note-name)))
+                                           (send music-canvas refresh)))]))
 
 (define staves-score-btns-panel2 (new horizontal-panel%
                                       [parent staves-score-panel]
@@ -350,31 +356,37 @@
                              [parent staves-score-btns-panel2]
                              [label "Change Tempo"]
                              [callback (lambda (button event)
-                                         (set! global-score
-                                               (change-tempo global-score
-                                                             (send tempo-slider get-value))))]))
+                                         (begin
+                                           (set! global-score
+                                                 (change-tempo global-score
+                                                               (send tempo-slider get-value)))
+                                           (send music-canvas refresh)))]))
 
 (define remove-staff-btn (new button%
                              [parent staves-score-btns-panel2]
                              [label "Remove Staff"]
                              [callback (lambda (button event)
-                                         (set! global-score
-                                               (remove-staff global-score
-                                                             global-edit-info)))]))
+                                         (begin
+                                           (set! global-score
+                                                 (remove-staff global-score
+                                                               global-edit-info))
+                                           (send music-canvas refresh)))]))
 
 (define add-staff-btn (new button%
                              [parent staves-score-btns-panel2]
                              [label "Add Staff"]
                              [callback (lambda (button event)
-                                         (set! global-score
-                                               (let ([note-name (string-to-note-name
-                                                                 (send key-sig-selector
-                                                                       get-string-selection))]
-                                                     [clef (if (= 0 (send clef-selector
-                                                                          get-selection))
-                                                               'Treble
-                                                               'Bass)])
-                                                 (add-staff global-score clef note-name))))]))
+                                         (begin
+                                           (set! global-score
+                                                 (let ([note-name (string-to-note-name
+                                                                   (send key-sig-selector
+                                                                         get-string-selection))]
+                                                       [clef (if (= 0 (send clef-selector
+                                                                            get-selection))
+                                                                 'Treble
+                                                                 'Bass)])
+                                                   (add-staff global-score clef note-name)))
+                                           (send music-canvas refresh)))]))
                                 
                         
 ;; TRANSPOSITION PANEL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -410,34 +422,38 @@
                                  [parent transposition-btn-panel]
                                  [label "Transpose Staff"]
                                  [callback (lambda (button event)
-                                             (set! global-score
-                                                   (let ([shift-amount
-                                                          (send transposition-slider get-value)]
-                                                         [direction
-                                                          (send transposition-up-down
-                                                                get-selection)])
-                                                     (let ([shift
-                                                            (cond [(= direction 0) shift-amount]
-                                                                  [else (* -1 shift-amount)])])
-                                                       (transpose-staff global-score
-                                                                        global-edit-info
-                                                                        shift)))))]))
+                                             (begin
+                                               (set! global-score
+                                                     (let ([shift-amount
+                                                            (send transposition-slider get-value)]
+                                                           [direction
+                                                            (send transposition-up-down
+                                                                  get-selection)])
+                                                       (let ([shift
+                                                              (cond [(= direction 0) shift-amount]
+                                                                    [else (* -1 shift-amount)])])
+                                                         (transpose-staff global-score
+                                                                          global-edit-info
+                                                                          shift))))
+                                               (send music-canvas refresh)))]))
 
 (define transpose-score-btn (new button%
                                  [parent transposition-btn-panel]
                                  [label "Transpose Score"]
                                  [callback (lambda (button event)
-                                             (set! global-score
-                                                   (let ([shift-amount
-                                                          (send transposition-slider get-value)]
-                                                         [direction
-                                                          (send transposition-up-down
-                                                                get-selection)])
-                                                     (let ([shift
-                                                            (cond [(= direction 0) shift-amount]
-                                                                  [else (* -1 shift-amount)])])
-                                                       (transpose-score global-score
-                                                                        shift)))))]))
+                                             (begin
+                                               (set! global-score
+                                                     (let ([shift-amount
+                                                            (send transposition-slider get-value)]
+                                                           [direction
+                                                            (send transposition-up-down
+                                                                  get-selection)])
+                                                       (let ([shift
+                                                              (cond [(= direction 0) shift-amount]
+                                                                    [else (* -1 shift-amount)])])
+                                                         (transpose-score global-score
+                                                                          shift))))
+                                               (send music-canvas refresh)))]))
 
 
 ;; I/O ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
