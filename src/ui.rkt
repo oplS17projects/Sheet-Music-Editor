@@ -144,15 +144,57 @@
                              [border 10]
                              [alignment '(center top)]))
 
-(define edit-info-instructions
-  (string-append "How to move the cursor:\n"
-                 "Left one note: LEFT ARROW\n"
-                 "Right one note: RIGHT ARROW\n"
-                 "Up one staff: PAGE UP\n"
-                 "Down one staff: PAGE DOWN"))
+(define vert-nav-panel (new vertical-panel%
+                            [parent edit-info-panel]
+                            [horiz-margin 25]
+                            [alignment '(center top)]))
 
-(define edit-info-msg (new message% [parent edit-info-panel]
-                          [label edit-info-instructions]))
+(define nav-up-btn (new button%
+                        [parent vert-nav-panel]
+                        [label "^"]
+                        [callback (lambda (button event)
+                                    (begin
+                                      (set! global-edit-info
+                                            (if (= 0 (get-current-staff global-edit-info))
+                                                global-edit-info
+                                                (change-current-staff global-edit-info
+                                                                      (- (get-current-staff global-edit-info) 1))))
+                                      (send music-canvas refresh)))]))
+
+(define horiz-nav-panel (new horizontal-panel%
+                             [parent vert-nav-panel]
+                             [alignment '(center center)]))
+
+(define nav-left-btn (new button%
+                        [parent horiz-nav-panel]
+                        [label "<"]
+                        [callback (lambda (button event)
+                                    (begin
+                                      (set! global-edit-info
+                                            (move-to-next-note global-score global-edit-info))
+                                      (send music-canvas refresh)))]))
+
+(define nav-right-btn (new button%
+                        [parent horiz-nav-panel]
+                        [label ">"]
+                        [callback (lambda (button event)
+                                    (begin
+                                      (set! global-edit-info
+                                            (move-to-previous-note global-score global-edit-info))
+                                      (send music-canvas refresh)))]))
+
+(define nav-down-btn (new button%
+                        [parent vert-nav-panel]
+                        [label "v"]
+                        [callback (lambda (button event)
+                                    (begin
+                                      (set! global-edit-info
+                                            (if (= (- (length (get-staves global-score)) 1)
+                                                   (get-current-staff global-edit-info))
+                                                global-edit-info
+                                                (change-current-staff global-edit-info
+                                                                      (+ (get-current-staff global-edit-info) 1))))
+                                      (send music-canvas refresh)))]))
 
 
 ;; NOTES PANEL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

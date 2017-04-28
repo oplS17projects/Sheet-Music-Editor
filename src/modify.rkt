@@ -19,12 +19,11 @@
                       (+ (get-current-index edit-info) change))))
 ;; Some short-hand procedures
 (define (move-to-next-note score edit-info)
-  (change-current-note-index score edit-info 1))
-(define (move-to-previous-note score edit-info)
   (change-current-note-index score edit-info -1))
+(define (move-to-previous-note score edit-info)
+  (change-current-note-index score edit-info 1))
 
 ;; Change current staff
-;; Will be selected from drop-down
 (define (change-current-staff edit-info staff-index)
   (make-edit-info staff-index (get-current-index edit-info)))
 
@@ -105,7 +104,9 @@
                           (list (make-note
                                  (make-pitch note-name
                                              (get-nearest-octave
-                                              (last notes)
+                                              (if (null? notes)
+                                                  (make-note (make-pitch R 4) 4)
+                                                  (last notes))
                                               note-name))
                                  (calculate-duration
                                   (get-time-sig score)
@@ -256,7 +257,9 @@
                                    base-score))]
           [down-octave-score (abs ( - (pitch-to-midi (make-pitch note-name (- previous-octave 1)))
                                       base-score))])
-      (cond [(and (< same-octave-score up-octave-score) (< same-octave-score down-octave-score))
+      (cond [(= (get-note (get-pitch previous-note)) R)
+             4]
+            [(and (< same-octave-score up-octave-score) (< same-octave-score down-octave-score))
              previous-octave]
             [(and (< up-octave-score same-octave-score) (< up-octave-score down-octave-score))
              (+ previous-octave 1)]
