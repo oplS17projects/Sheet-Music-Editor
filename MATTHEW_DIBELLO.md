@@ -1,5 +1,7 @@
 # Sheet Music Editor
 
+**Note for Fred:** Sorry this is so long...I realized upon completing it that it contained way too many code excerpts, and probably an equally-unnecessary amount of analysis. I guess there was just so much cool stuff I wanted to show off :).
+
 ## Matthew DiBello
 ### April 30, 2017
 
