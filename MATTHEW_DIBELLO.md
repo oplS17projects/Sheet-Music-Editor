@@ -27,6 +27,60 @@ The code uses four libraries:
 
 # Key Code Excerpts
 
+## Initialization Using a Global Object
+
+There are two global objects which contain all the sheet music data. (All the code in this section was co-written by me and Doug). The first hold all the information about the score. It's initialized as such:
+
+```
+(set! global-score (make-score (make-time-sig 4 4)
+                               120
+                               (list (make-staff 'treble (make-key-sig C) (list (make-note (make-pitch R -1) 0.5))))))
+```
+
+A score is composed of a time signature, a tempo, and a list of staves. A staff is composed of a clef, a key signature, and a list of notes. A note is composed of a pitch (a note-value/note-name and an octave) and a duration.
+
+The other global object stored information about the user's current editing staff (ie. what staff and note they have selected).
+
+```
+(set! global-edit-info (make-edit-info 0 0))
+```
+
+These objects are important because they hold all the data necessary for the main modules to operate.
+
+As you may have noticed in the global score code above, there are constructors for many of the "atoms" of our musical data. One example of this is the following:
+
+```
+(define (make-score time-sig tempo staves)
+  (list time-sig tempo staves))
+```
+
+This allows for the simple creation of a score given the correct parameters.
+
+
+## Procedural Abstraction (Selectors)
+
+Quite a number of procedures were created us to easily access certain information about the global object or other "atoms" of our musical data. These belong to the core module, and were co-written by Doug and I.
+
+Just like there were contructors (as described in the above section), there are also selectors which accessed parts of the object created by the constructor. Here's an example of a contructor and its selectors:
+
+```
+(define (make-score time-sig tempo staves)
+  (list time-sig tempo staves))
+
+(define get-time-sig car)
+(define get-tempo cadr)
+(define get-staves caddr)
+(define (get-staff score index)
+  (define (get-staff-helper staves index)
+    (if (> index 0)
+        (get-staff-helper (cdr staves) (- index 1))
+        (car staves)))
+  (get-staff-helper (get-staves score) index))
+```
+
+As you can see, most of the selectors are very simple. However, there are some that are more complex, such as get-staff above, which uses recursion (see below).
+
+
 ## Recursion to Rebuild Lists
 
 The most important concept in the modifying functions is the use of recursion to rebuild lists. In order to mutate the data that internally represents the sheet music, the code I wrote rebuild the data object and then saves the new object as the global-object.
