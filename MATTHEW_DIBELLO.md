@@ -4,16 +4,15 @@
 ### April 30, 2017
 
 # Overview
-For this project, we created a program that allows a user to write, edit, save/load/export, and play sheet music. It it a basic version of software similar Sibelius, Finale and MuseScore.
+For this project, we created a program that allows a user to write, edit, save/load/export, and play sheet music. It it a basic version of software similar to Sibelius, Finale and MuseScore.
 
-Since a sheet music editor can easily contain hundreds of features, we chose to only implement the most basic features in an attempt to create a fully-functional program, but one that can be wrtitten in a matter of weeks.
+Since a sheet music editor can easily contain hundreds of features, we chose to only implement the most basic features in an attempt to create a fully-functional program that could be wrtitten in a matter of weeks.
 
-The implementation of this project utilizes many of the core concepts that we've studied throughout the course.
+**Authorship note:** All of the code described here was written by myself unless otherwise noted (in which case it was co-written by me and Doug).
 
-**Authorship note:** All of the code described here was written by myself.
 
 # Libraries Used
-The code uses four libraries:
+The code uses three libraries:
 
 ```
 (require racket/draw)
@@ -22,14 +21,18 @@ The code uses four libraries:
 ```
 
 * The ```draw``` library was used to display the sheet music graphically.
-* The ```gui``` library was used to provide a ui to the interface for interacting/modifying the data.
+* The ```gui``` library was used to provide a UI to the interface for interacting with/modifying the data.
 * the ```rsound``` library was used to generate an audio representation of the sheet music and play it for the user.
+
 
 # Key Code Excerpts
 
+The bulk of the powerful code that I wrote for this project lies in the modifying functions (see src/modify.rkt). Even though I also wrote __Play__ (src/play.rkt) and __UI__ (src/ui.rkt), and co-wrote __Core__ with Doug (src/core.rkt), the majority of the code below is from __Modify__. The procedures in __Modify__ best utilized the core concepts that we studied in this course.
+
+
 ## Initialization Using a Global Object
 
-There are two global objects which contain all the sheet music data. (All the code in this section was co-written by me and Doug). The first hold all the information about the score. It's initialized as such:
+There are two global objects which contain all the sheet music data. (All the code in this section was co-written by me and Doug). The first object holds all the information about the score. It's initialized as such:
 
 ```
 (set! global-score (make-score (make-time-sig 4 4)
@@ -37,7 +40,7 @@ There are two global objects which contain all the sheet music data. (All the co
                                (list (make-staff 'treble (make-key-sig C) (list (make-note (make-pitch R -1) 0.5))))))
 ```
 
-A score is composed of a time signature, a tempo, and a list of staves. A staff is composed of a clef, a key signature, and a list of notes. A note is composed of a pitch (a note-value/note-name and an octave) and a duration.
+A score is composed of a time signature, a tempo, and a list of staves. A staff is composed of a clef, a key signature, and a list of notes. A note is composed of a pitch (a note-value/note-name and an octave) and a duration. All of this information is stored in a list.
 
 The other global object stored information about the user's current editing staff (ie. what staff and note they have selected).
 
@@ -54,14 +57,14 @@ As you may have noticed in the global score code above, there are constructors f
   (list time-sig tempo staves))
 ```
 
-This allows for the simple creation of a score given the correct parameters.
+This allows for the simple creation of a score given the correct parameters. Other constructors exist for other musical "atoms".
 
 
 ## Procedural Abstraction (Selectors)
 
-Quite a number of procedures were created us to easily access certain information about the global object or other "atoms" of our musical data. These belong to the core module, and were co-written by Doug and I.
+Quite a number of procedures were created us to easily access certain information about the global object or other "atoms" of our musical data. These belong to the __Core__ module, and were co-written by Doug and me.
 
-Just like there were contructors (as described in the above section), there are also selectors which accessed parts of the object created by the constructor. Here's an example of a contructor and its selectors:
+Just like there were contructors (as described in the above section), there are also selectors which access parts of the object created by the constructor. Here's an example of a contructor and its selectors:
 
 ```
 (define (make-score time-sig tempo staves)
@@ -83,9 +86,9 @@ As you can see, most of the selectors are very simple. However, there are some t
 
 ## Recursion to Rebuild Lists
 
-The most important concept in the modifying functions is the use of recursion to rebuild lists. In order to mutate the data that internally represents the sheet music, the code I wrote rebuild the data object and then saves the new object as the global-object.
+The most important concept in the modifying functions is the use of recursion to rebuild lists. In order to mutate the data that internally represents the sheet music, the code I wrote rebuilds the data object and then saves the new object as the global-object.
 
-This concpet it used by over a dozen of my modifying functions, but provided below is one example:
+This concept is used by over a dozen of my modifying functions, but provided below is one example:
 
 ```
 (define (add-staff score clef key-name)
@@ -133,7 +136,7 @@ While this may seem like a trivial addition to the built-in Map procedure, it is
                            (get-staves score))))
 ```
 
-This procedure changes the key signature of a staff (or rather builds a new score with one staff modified). In this instance, I am iterating through the staves of the score and want to change the key signature of one of them. Because the only information I have about the staff is its index, indexed-map allows me to write a modifying procedure (the lambda expression above) that only applies itself to the staff of the correct index.
+This procedure changes the key signature of a staff (or rather builds a new score with one staff's key signature modified). In this instance, I am iterating through the staves of the score and want to change the key signature of one of them. Because the only information I have about the staff is its index, indexed-map allows me to write a modifying procedure (the lambda expression above) that only applies itself to the staff of the correct index.
 
 Now on to indexed-filter:
 
@@ -187,7 +190,7 @@ In the modifying functions, there was one instance where I wanted a single funct
                            (get-duration n)))))]))  
 ```
 
-In this function is provided two different ways to change a note. Either the note is shifted a certain number of half steps up or down, or a new note-name is provided. Instead of writing and calling two different functions, I simply allowed this function to take a message parameter (called type). If the type is 'shift, then we assume that the modification parameter is a number of half steps. Else, if the type is 'name, then we assume that the modification parameter is a name. Each message calls a different function with different parameters.
+In this function is provided two different ways to change a note. Either the note is shifted a certain number of half steps up or down, or a new note-name is provided. Instead of writing and calling two different functions, I simply allowed this function to take a message parameter (called type). If the type is 'shift, then we assume that the modification parameter is a number of half steps. Else, if the type is 'name, and we assume that the modification parameter is a name. Each message calls a different function with different parameters.
 
 
 ## Procedural Abstraction (Complex Functions)
@@ -225,7 +228,7 @@ The only thing that this function does is call another function! This function i
 
 All ```modify-notes``` turns out to be is a call to ```indexed-map```! This makes sense, because in modifying a series of notes, the map function is quite useful.
 
-Now, to see how this fits together, let's take a look at the ```modify-note``` (singular) procedure above. When calling ```modify-notes``` (plural), it provides a procedure that maps through a list of notes and only applies the procedure we've provided if the index of the given note matches the index of the cursor (which is stored in the edit-info we pass in). But to get this list of notes to map through and check, we first need to map through the staves of the score and find the staff with the correct index. That's where ```modify-notes``` (plural) comes in. It looks through the staves until it finds the right one, then it applies the ```indexed-map``` procedure passed along from ```modify-note```.
+Now, to see how this fits together, let's take a look at the ```modify-note``` (singular) procedure above. When calling ```modify-notes``` (plural), we provides a procedure that maps through a list of notes and only applies the procedure we've provided if the index of the given note matches the index of the cursor (which is stored in the edit-info we pass in). But to get this list of notes to map through and check, we first need to map through the staves of the score and find the staff with the correct index. That's where ```modify-notes``` (plural) comes in. It looks through the staves until it finds the right one, then it applies the ```indexed-map``` procedure passed along from ```modify-note```.
 
 If these procedures fit together so well, why have we separated them? Well, there are some instances when we want to operate on a series of notes. Take the following procedure for example:
 
