@@ -1,4 +1,4 @@
-# Interface to Google Drive in Racket
+# Sheet Music Editor in Racket
 
 ## Douglas Salvati
 ### 30 April, 2017
