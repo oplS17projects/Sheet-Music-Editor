@@ -161,3 +161,79 @@ The implementation is similar to indexed-map, so I won't dwell on it. Like Map, 
 ```
 
 Here, we don't want to modify a staff of a given index, but rather not include it at all when rebuilding the score. As a result, indexed-filter is found to be quite useful.
+
+
+## Message Passing
+
+In the modifying functions, there was one instance where I wanted a single function to perform two different tasks based on context. Here's the function:
+
+```
+(define (change-note score edit-info type modification)
+  (cond [(eq? type 'shift)
+         (let ([shift modification])
+           (modify-note score
+                        edit-info
+                        (lambda (n) (shift-note n shift))))]
+        [(eq? type 'name)
+         (let ([note-name modification])
+           (modify-note score
+                        edit-info
+                        (lambda (n)
+                          (make-note
+                           (make-pitch note-name
+                                       (get-nearest-octave
+                                        n
+                                        note-name))
+                           (get-duration n)))))]))  
+```
+
+In this function is provided two different ways to change a note. Either the note is shifted a certain number of half steps up or down, or a new note-name is provided. Instead of writing and calling two different functions, I simply allowed this function to take a message parameter (called type). If the type is 'shift, then we assume that the modification parameter is a number of half steps. Else, if the type is 'name, then we assume that the modification parameter is a name. Each message calls a different function with different parameters.
+
+
+## Procedural Abstraction (Complex Functions)
+
+In the modifying functions, there were several complex functions. Whenever I saw code that I was repeating, I tried to abstract it out into its own function. 
+
+In the code example provided in the previous section (message passing), we see that the function ```modify-note``` is called twice. This is one example of procedural abstraction. I found myself repeating a lot of code for modifying a given note, so I abstracted the procedure out. Let's take a look:
+
+```
+(define (modify-note score edit-info proc)
+  (modify-notes score
+                (get-current-staff edit-info)
+                (lambda (notes)
+                  (indexed-map (lambda (n i)
+                                 (if (= i (get-current-index edit-info))
+                                     (proc n)
+                                     n))
+                               notes))))
+```
+
+The only thing that this function does is call another function! This function is called ```modify-notes``` (notice the plural "notes"). This is *another* function that I was able to abstract out, and it is specfically for modifying all the notes of a staff. If we take a look at that procedure, we'll see:
+
+```
+(define (modify-notes score staff-index proc)
+  (make-score (get-time-sig score)
+              (get-tempo score)
+              (indexed-map (lambda (s i)
+                             (if (equal? staff-index i)
+                                 (make-staff (get-clef s)
+                                             (get-key-sig s)
+                                             (proc (get-notes s)))
+                                 s))
+                           (get-staves score))))
+```
+
+All ```modify-notes``` turns out to be is a call to ```indexed-map```! This makes sense, because in modifying a series of notes, the map function is quite useful.
+
+Now, to see how this fits together, let's take a look at the ```modify-note``` (singular) procedure above. When calling ```modify-notes``` (plural), it provides a procedure that maps through a list of notes and only applies the procedure we've provided if the index of the given note matches the index of the cursor (which is stored in the edit-info we pass in). But to get this list of notes to map through and check, we first need to map through the staves of the score and find the staff with the correct index. That's where ```modify-notes``` (plural) comes in. It looks through the staves until it finds the right one, then it applies the ```indexed-map``` procedure passed along from ```modify-note```.
+
+If these procedures fit together so well, why have we separated them? Well, there are some instances when we want to operate on a series of notes. Take the following procedure for example:
+
+```
+(define (transpose-staff score edit-info shift)
+  (modify-notes score
+                (get-current-staff edit-info)
+                (lambda (notes) (map (lambda (n) (shift-note n shift)) notes))))
+```
+
+This procedure modifies all the notes in a given staff, so a simple call to ```modify-notes``` will do the trick.
