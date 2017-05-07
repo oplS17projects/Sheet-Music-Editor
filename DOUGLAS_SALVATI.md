@@ -9,7 +9,7 @@ My contributions primarily involved the modules
 
 (a) **Draw**, which turns the internal music representation into a graphic, and
 
-(b) **Expot**, which allows export of the graphic to PDF format, as well as the ability to save and load our own
+(b) **Export**, which allows export of the graphic to PDF format, as well as the ability to save and load our own
 native file format (basically just a Racket list).
 
 [Draw](/src/draw.rkt) itself consists of several modules.  First, the size of the document is calculated and a border
